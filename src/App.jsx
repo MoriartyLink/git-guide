@@ -9,7 +9,6 @@ import {
   Circle,
   CircleHelp,
   Clock3,
-  Code2,
   Command,
   Copy,
   GraduationCap,
@@ -30,7 +29,7 @@ import {
   useRef,
   useState,
 } from "react";
-import talkwareLogo from "./assets/talkware-logo.png";
+import gitTogetherLogo from "./assets/git-together-logo.png";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
@@ -85,15 +84,11 @@ function Logo({ compact = false, onClick }) {
       onClick={onClick}
     >
       <span className="brand-mark">
-        <Code2 size={18} strokeWidth={2.4} />
+        <img src={gitTogetherLogo} alt="" />
       </span>
       {!compact && (
         <span>
           <strong>Git Together</strong>
-          <small className="talkware-subbrand">
-            <img src={talkwareLogo} alt="" />
-            Talkware
-          </small>
         </span>
       )}
     </button>
@@ -209,30 +204,226 @@ function Hero({ onStart }) {
           <h1>
             {t("Learn Git.", "Git ကိုလေ့လာ")}
             <br />
-            <span>{t("Build together.", "အတူတူဖန်တီး")}</span>
+            <span>{t("Build together.", "အတူတူတည်ဆောက်")}</span>
           </h1>
           <p>
             {t(
               "Simple Git and GitHub lessons. Read a short step, try a command, and learn with your community.",
-              "Git နဲ့ GitHub ကို ရိုးရိုးရှင်းရှင်း လေ့လာမယ် အဆင့်တိုတိုဖတ်၊ command စမ်းပြီး community နဲ့အတူ လေ့လာပါ",
+              "အဆင့်တိုတိုဖတ်၊ command တစ်ခုစီစမ်း၊ Git နဲ့ GitHub ကို community နဲ့အတူ တစ်လှမ်းချင်း လေ့လာမယ်",
             )}
           </p>
           <div className="hero-actions">
             <button className="primary-button hero-button" onClick={onStart}>
               {t("Start learning", "စလေ့လာမယ်")}
             </button>
-            <a
-              className="secondary-button hero-button"
-              href="https://www.talkware.click/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              {t("Visit Talkware", "Talkware ကိုသွားမယ်")}
-            </a>
           </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function fitCertificateText(context, text, maxWidth, startSize, fontFamily) {
+  let size = startSize;
+  do {
+    context.font = `700 ${size}px ${fontFamily}`;
+    if (context.measureText(text).width <= maxWidth) break;
+    size -= 2;
+  } while (size > 34);
+  return size;
+}
+
+async function downloadCertificate(name, language) {
+  await document.fonts.ready;
+  const { jsPDF } = await import("jspdf");
+  const canvas = document.createElement("canvas");
+  canvas.width = 1684;
+  canvas.height = 1190;
+  const context = canvas.getContext("2d");
+  const isBurmese = language === "my";
+  const fontFamily = isBurmese ? '"Noto Sans Myanmar", sans-serif' : '"DM Sans", sans-serif';
+
+  const background = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+  background.addColorStop(0, "#080b09");
+  background.addColorStop(1, "#111713");
+  context.fillStyle = background;
+  context.fillRect(0, 0, canvas.width, canvas.height);
+
+  const glow = context.createRadialGradient(842, 80, 10, 842, 80, 650);
+  glow.addColorStop(0, "rgba(48, 209, 88, 0.22)");
+  glow.addColorStop(1, "rgba(48, 209, 88, 0)");
+  context.fillStyle = glow;
+  context.fillRect(0, 0, canvas.width, 720);
+
+  context.strokeStyle = "#30d158";
+  context.lineWidth = 3;
+  context.strokeRect(54, 54, canvas.width - 108, canvas.height - 108);
+  context.strokeStyle = "rgba(48, 209, 88, 0.25)";
+  context.lineWidth = 1;
+  context.strokeRect(72, 72, canvas.width - 144, canvas.height - 144);
+
+  context.textAlign = "center";
+  context.fillStyle = "#30d158";
+  context.font = `700 24px ${fontFamily}`;
+  context.fillText("GIT TOGETHER · TALKWARE", 842, 160);
+
+  context.fillStyle = "#f5f5f7";
+  context.font = `700 ${isBurmese ? 58 : 72}px ${fontFamily}`;
+  context.fillText(isBurmese ? "ပြီးမြောက်ကြောင်း လက်မှတ်" : "Certificate of Completion", 842, 285);
+
+  context.fillStyle = "#a1a1a6";
+  context.font = `500 30px ${fontFamily}`;
+  context.fillText("Git Guide Class", 842, 350);
+  context.fillText(
+    isBurmese ? "ဤလက်မှတ်ကို ချီးမြှင့်သည်" : "This certificate is presented to",
+    842,
+    465,
+  );
+
+  context.fillStyle = "#f5f5f7";
+  const nameSize = fitCertificateText(context, name, 1320, 78, fontFamily);
+  context.font = `700 ${nameSize}px ${fontFamily}`;
+  context.fillText(name, 842, 575);
+
+  context.strokeStyle = "rgba(48, 209, 88, 0.55)";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(350, 620);
+  context.lineTo(1334, 620);
+  context.stroke();
+
+  context.fillStyle = "#c7c7cc";
+  context.font = `400 ${isBurmese ? 26 : 28}px ${fontFamily}`;
+  context.fillText(
+    isBurmese
+      ? "Git Together ရှိ Git နှင့် GitHub သင်ခန်းစာများအားလုံးကို ပြီးမြောက်သည့်အတွက်"
+      : "for completing all Git and GitHub lessons in the Git Together guide",
+    842,
+    705,
+  );
+
+  context.fillStyle = "#8e8e93";
+  context.font = `500 22px ${fontFamily}`;
+  context.fillText(
+    new Intl.DateTimeFormat(isBurmese ? "my-MM" : "en-GB", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(new Date()),
+    420,
+    920,
+  );
+  context.fillText(isBurmese ? "ထုတ်ပေးသည့်နေ့" : "Date issued", 420, 960);
+
+  context.fillStyle = "#f5f5f7";
+  context.font = `700 28px ${fontFamily}`;
+  context.fillText("Min Thu Khaing", 1264, 920);
+  context.fillStyle = "#8e8e93";
+  context.font = `500 22px ${fontFamily}`;
+  context.fillText("Talkware Lead", 1264, 960);
+
+  const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, 297, 210);
+  const safeName = name.replace(/[^\p{L}\p{N}-]+/gu, "-").replace(/^-|-$/g, "") || "learner";
+  pdf.save(`git-together-certificate-${safeName}.pdf`);
+}
+
+function CompletionCertificateCard({ completed, lessonCount }) {
+  const { language, t } = useLanguage();
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [creating, setCreating] = useState(false);
+  const allDone = lessonCount > 0 && completed.length >= lessonCount;
+  const remaining = Math.max(lessonCount - completed.length, 0);
+
+  const createCertificate = async (event) => {
+    event.preventDefault();
+    const cleanName = name.trim();
+    if (!cleanName || creating) return;
+    setCreating(true);
+    try {
+      await downloadCertificate(cleanName.slice(0, 80), language);
+      setOpen(false);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  return (
+    <>
+      <article className={`certificate-card ${allDone ? "unlocked" : ""}`}>
+        <div>
+          <span className="kicker">{t("GIT GUIDE CLASS", "GIT GUIDE CLASS")}</span>
+          <h3>{t("Certificate of completion", "ပြီးမြောက်ကြောင်း လက်မှတ်")}</h3>
+          <p>
+            {allDone
+              ? t(
+                  "You finished every lesson. Your certificate is ready.",
+                  "သင်ခန်းစာအားလုံး ပြီးပါပြီ သင့်လက်မှတ် အဆင်သင့်ဖြစ်ပါပြီ",
+                )
+              : t(
+                  `Complete ${remaining} more ${remaining === 1 ? "lesson" : "lessons"} to unlock your certificate.`,
+                  `လက်မှတ်ရရန် သင်ခန်းစာ ${remaining} ခု ထပ်ပြီးအောင်လုပ်ပါ`,
+                )}
+          </p>
+        </div>
+        <button
+          className="primary-button"
+          disabled={!allDone}
+          onClick={() => setOpen(true)}
+        >
+          {allDone ? t("Get certificate", "လက်မှတ်ရယူမယ်") : t("Not ready yet", "မပြီးသေးပါ")}
+        </button>
+      </article>
+
+      {open && (
+        <div className="certificate-dialog" role="dialog" aria-modal="true" aria-labelledby="certificate-title">
+          <button
+            className="certificate-backdrop"
+            onClick={() => setOpen(false)}
+            aria-label={t("Close", "ပိတ်မယ်")}
+          />
+          <form className="certificate-panel" onSubmit={createCertificate}>
+            <span className="kicker">{t("CERTIFICATE", "လက်မှတ်")}</span>
+            <h2 id="certificate-title">
+              {t("Name on your certificate", "လက်မှတ်ပေါ် ထည့်မည့်နာမည်")}
+            </h2>
+            <p>
+              {t(
+                "Enter your name or GitHub username exactly as you want it to appear.",
+                "လက်မှတ်ပေါ် ပေါ်စေလိုသည့် နာမည် သို့မဟုတ် GitHub username ကို ထည့်ပါ",
+              )}
+            </p>
+            <label htmlFor="certificate-name">
+              {t("Name or username", "နာမည် သို့မဟုတ် username")}
+            </label>
+            <input
+              id="certificate-name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              maxLength={80}
+              autoFocus
+              required
+              placeholder={t("Your name", "သင့်နာမည်")}
+            />
+            <small>
+              {t(
+                "Issued by Min Thu Khaing, Talkware Lead",
+                "Min Thu Khaing, Talkware Lead မှ ထုတ်ပေးသည်",
+              )}
+            </small>
+            <div>
+              <button type="button" className="secondary-button" onClick={() => setOpen(false)}>
+                {t("Cancel", "မလုပ်တော့ပါ")}
+              </button>
+              <button type="submit" className="primary-button" disabled={!name.trim() || creating}>
+                {creating ? t("Creating…", "ပြုလုပ်နေသည်…") : t("Download PDF", "PDF ရယူမယ်")}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -295,6 +486,7 @@ function PathSection({ guide, completed, onOpenLesson, pathRef }) {
             );
           })}
         </div>
+        <CompletionCertificateCard completed={completed} lessonCount={lessonCount} />
       </div>
     </section>
   );
@@ -646,12 +838,32 @@ function CommandBlock({ label, command, onTry }) {
   );
 }
 
+function shuffleCheckAnswers(check) {
+  if (!check) return [];
+  const answers = check.options.map((text, index) => ({
+    text,
+    correct: index === check.correct,
+  }));
+  let seed = Array.from(check.question).reduce(
+    (value, character) => ((value * 31) + character.codePointAt(0)) >>> 0,
+    2166136261,
+  );
+
+  for (let index = answers.length - 1; index > 0; index -= 1) {
+    seed = ((seed * 1664525) + 1013904223) >>> 0;
+    const target = seed % (index + 1);
+    [answers[index], answers[target]] = [answers[target], answers[index]];
+  }
+  return answers;
+}
+
 function QuickCheck({ check }) {
   const { t } = useLanguage();
   const [selected, setSelected] = useState(null);
+  const answers = useMemo(() => shuffleCheckAnswers(check), [check]);
 
   if (!check) return null;
-  const isCorrect = selected === check.correct;
+  const isCorrect = selected !== null && answers[selected]?.correct;
 
   return (
     <section className="quick-check">
@@ -662,13 +874,13 @@ function QuickCheck({ check }) {
         </div>
       </div>
       <div className="answer-grid">
-        {check.options.map((option, index) => (
+        {answers.map((answer, index) => (
           <button
-            key={option}
+            key={answer.text}
             className={
               selected === null
                 ? ""
-                : index === check.correct
+                : answer.correct
                   ? "correct"
                   : selected === index
                     ? "wrong"
@@ -677,7 +889,7 @@ function QuickCheck({ check }) {
             onClick={() => setSelected(index)}
           >
             <span>{String.fromCharCode(65 + index)}</span>
-            {option}
+            {answer.text}
           </button>
         ))}
       </div>
@@ -1244,53 +1456,223 @@ function TerminalLab({ completedChallenges, setCompletedChallenges, initialComma
 
 function CheatSheet({ onTry }) {
   const { t } = useLanguage();
-  const groups = [
+  const workflows = [
     {
-      title: t("Start & check", "စပြီး စစ်မယ်"),
-      commands: [
-        ["git init", t("Start a repository", "Repository စမယ်")],
-        ["git status", t("See changed files", "ပြောင်းထားတဲ့ file ကြည့်မယ်")],
-        ["git log --oneline", t("See saved commits", "သိမ်းထားတဲ့ commit ကြည့်မယ်")],
+      title: t("Save today’s work", "ဒီနေ့အလုပ်ကို သိမ်းမယ်"),
+      description: t(
+        "Check, review, stage, then commit one clear change.",
+        "စစ်မယ်၊ ပြန်ကြည့်မယ်၊ stage လုပ်မယ်၊ ပြီးရင် ရှင်းတဲ့ commit တစ်ခု သိမ်းမယ်",
+      ),
+      steps: [
+        ["git status", t("See what changed", "ဘာပြောင်းထားလဲ ကြည့်မယ်")],
+        ["git diff", t("Review unstaged changes", "Stage မလုပ်ရသေးတဲ့ changes ကြည့်မယ်")],
+        ["git add README.md", t("Stage only the file you want", "လိုတဲ့ file ကိုပဲ stage လုပ်မယ်")],
+        ['git commit -m "Update README"', t("Save with a clear message", "ရှင်းတဲ့ message နဲ့ သိမ်းမယ်")],
       ],
     },
     {
-      title: t("Save work", "အလုပ်သိမ်းမယ်"),
-      commands: [
-        ["git add .", t("Choose current changes", "လက်ရှိ changes ရွေးမယ်")],
-        ['git commit -m "message"', t("Save a snapshot", "Snapshot သိမ်းမယ်")],
-        ["git diff --staged", t("Review before commit", "Commit မလုပ်ခင်ကြည့်မယ်")],
+      title: t("Start a feature", "Feature အသစ် စမယ်"),
+      description: t(
+        "Update main first, then work on a separate branch.",
+        "main ကို အရင် update လုပ်ပြီး branch သီးသန့်မှာ အလုပ်လုပ်မယ်",
+      ),
+      steps: [
+        ["git switch main", t("Move to main", "main ကိုပြောင်းမယ်")],
+        ["git pull --ff-only", t("Get the newest safe update", "နောက်ဆုံး update ကို လုံခြုံစွာယူမယ်")],
+        ["git switch -c feat/profile", t("Create the feature branch", "Feature branch ဖန်တီးမယ်")],
+        ["git push -u origin feat/profile", t("Publish and track the branch", "Branch တင်ပြီး track လုပ်မယ်")],
       ],
     },
     {
-      title: t("Branches", "Branch များ"),
-      commands: [
-        ["git branch", t("List branches", "Branch list ကြည့်မယ်")],
-        ["git switch -c branch-name", t("Create and switch", "ဖန်တီးပြီး ပြောင်းမယ်")],
-        ["git merge branch-name", t("Merge a branch", "Branch ကို merge မယ်")],
+      title: t("Update your branch", "ကိုယ့် branch ကို update လုပ်မယ်"),
+      description: t(
+        "Bring the newest main commits into your feature before a PR.",
+        "PR မတင်ခင် main ရဲ့ နောက်ဆုံး commits ကို ကိုယ့် feature ထဲယူမယ်",
+      ),
+      steps: [
+        ["git fetch origin", t("Download remote history", "Remote history ကိုယူမယ်")],
+        ["git rebase origin/main", t("Replay your work on new main", "ကိုယ့်အလုပ်ကို main အသစ်ပေါ် ပြန်တင်မယ်")],
+        ["git push --force-with-lease", t("Update a rebased branch safely", "Rebase လုပ်ထားတဲ့ branch ကို လုံခြုံစွာ update မယ်")],
       ],
     },
     {
-      title: t("Share on GitHub", "GitHub မှာ မျှဝေမယ်"),
-      commands: [
-        ["git remote -v", t("Check remote", "Remote စစ်မယ်")],
-        ["git push -u origin branch-name", t("Publish a branch", "Branch တင်မယ်")],
-        ["git pull --rebase", t("Get remote changes", "Remote changes ယူမယ်")],
+      title: t("Resolve a conflict", "Conflict ဖြေရှင်းမယ်"),
+      description: t(
+        "Find the files, choose the final code, then continue.",
+        "Conflict ဖြစ်တဲ့ files ရှာ၊ နောက်ဆုံးထားမယ့် code ရွေးပြီး ဆက်လုပ်မယ်",
+      ),
+      steps: [
+        ["git status", t("Find conflicted files", "Conflict ဖြစ်တဲ့ files ရှာမယ်")],
+        ["git add src/App.jsx", t("Mark the resolved file", "ဖြေရှင်းပြီးတဲ့ file ကိုမှတ်မယ်")],
+        ["git rebase --continue", t("Continue the stopped rebase", "ရပ်ထားတဲ့ rebase ကိုဆက်မယ်")],
+        ["git rebase --abort", t("Or return to before the rebase", "မလုပ်လိုရင် rebase မတိုင်ခင်ကို ပြန်မယ်")],
+      ],
+    },
+    {
+      title: t("Open a contribution PR", "Contribution PR တင်မယ်"),
+      description: t(
+        "Pick an issue, publish your fix, and open a focused PR.",
+        "Issue ရွေး၊ fix ကိုတင်၊ ရည်ရွယ်ချက်ရှင်းတဲ့ PR ဖွင့်မယ်",
+      ),
+      steps: [
+        ["gh issue list --label \"good first issue\"", t("Find a beginner issue", "အစပြုသူ issue ရှာမယ်")],
+        ["git push -u origin fix/issue-42", t("Publish your fix branch", "Fix branch ကိုတင်မယ်")],
+        ["gh pr create --fill", t("Create a PR from your commits", "Commits ကနေ PR ဖန်တီးမယ်")],
+      ],
+    },
+    {
+      title: t("Create a release", "Release ထုတ်မယ်"),
+      description: t(
+        "Tag a tested commit, publish it, then create release notes.",
+        "စမ်းသပ်ပြီးတဲ့ commit ကို tag တပ်၊ တင်၊ release notes ဖန်တီးမယ်",
+      ),
+      steps: [
+        ["git tag -a v1.0.0 -m \"v1.0.0\"", t("Create an annotated version tag", "Version tag ဖန်တီးမယ်")],
+        ["git push origin v1.0.0", t("Publish the tag", "Tag ကိုတင်မယ်")],
+        ["gh release create v1.0.0 --generate-notes", t("Publish the GitHub release", "GitHub release ထုတ်မယ်")],
+        ["gh run list", t("Check CI and deployment runs", "CI နဲ့ deploy runs စစ်မယ်")],
       ],
     },
   ];
+
+  const groups = [
+    {
+      title: t("Create & identify", "Project စပြီး identity သတ်မှတ်မယ်"),
+      description: t(
+        "Use once when you start on a device or project.",
+        "Device သို့မဟုတ် project အသစ်မှာ တစ်ကြိမ်သုံးမယ်",
+      ),
+      commands: [
+        ["git init", t("Turn this folder into a repository", "ဒီ folder ကို repository လုပ်မယ်")],
+        ["git clone URL", t("Download a repository and its history", "Repository နဲ့ history ကို download လုပ်မယ်")],
+        ['git config --global user.name "Your Name"', t("Set the commit author name", "Commit author နာမည် သတ်မှတ်မယ်")],
+        ['git config --global user.email "you@example.com"', t("Set the commit author email", "Commit author email သတ်မှတ်မယ်")],
+      ],
+    },
+    {
+      title: t("Inspect before saving", "မသိမ်းခင် စစ်မယ်"),
+      description: t(
+        "Read the current state before changing history.",
+        "History မပြောင်းခင် လက်ရှိအခြေအနေကို ကြည့်မယ်",
+      ),
+      commands: [
+        ["git status", t("See staged, changed, and new files", "Staged၊ changed နဲ့ file အသစ်တွေ ကြည့်မယ်")],
+        ["git diff", t("See unstaged line changes", "Stage မလုပ်ရသေးတဲ့ line changes ကြည့်မယ်")],
+        ["git diff --staged", t("See what the next commit will save", "နောက် commit ထဲဝင်မယ့် changes ကြည့်မယ်")],
+        ["git log --oneline --graph --all", t("See compact history and branches", "History နဲ့ branches ကို ကျစ်လျစ်စွာကြည့်မယ်")],
+        ["git show COMMIT", t("Inspect one commit and its patch", "Commit တစ်ခုနဲ့ သူ့ patch ကိုကြည့်မယ်")],
+      ],
+    },
+    {
+      title: t("Stage & commit", "Stage နဲ့ commit"),
+      description: t(
+        "Save one focused piece of work.",
+        "ရည်ရွယ်ချက်တစ်ခုတည်းပါတဲ့ အလုပ်ကို သိမ်းမယ်",
+      ),
+      commands: [
+        ["git add FILE", t("Stage one file", "File တစ်ခုကို stage လုပ်မယ်")],
+        ["git add -p", t("Choose individual changed parts", "ပြောင်းထားတဲ့ အပိုင်းတစ်ခုချင်း ရွေးမယ်")],
+        ['git commit -m "Clear message"', t("-m adds the commit message", "-m က commit message ထည့်ပေးတယ်")],
+        ["git commit --amend", t("Correct the latest local commit", "နောက်ဆုံး local commit ကိုပြင်မယ်")],
+      ],
+    },
+    {
+      title: t("Branches & integration", "Branches နဲ့ code ပေါင်းမယ်"),
+      description: t(
+        "Keep work separate, then merge or rebase.",
+        "အလုပ်ကိုခွဲထားပြီး merge သို့မဟုတ် rebase လုပ်မယ်",
+      ),
+      commands: [
+        ["git branch --all", t("List local and remote branches", "Local နဲ့ remote branches အားလုံးကြည့်မယ်")],
+        ["git switch -c branch-name", t("Create and enter a branch", "Branch ဖန်တီးပြီး ဝင်မယ်")],
+        ["git merge branch-name", t("Join a branch into the current branch", "Branch ကို လက်ရှိ branch ထဲ ပေါင်းမယ်")],
+        ["git rebase main", t("Move your commits onto the newest main", "ကိုယ့် commits ကို main အသစ်ပေါ် ရွှေ့မယ်")],
+        ["git branch -d branch-name", t("Delete a merged local branch", "Merge ပြီးတဲ့ local branch ဖျက်မယ်")],
+      ],
+    },
+    {
+      title: t("Remote & GitHub", "Remote နဲ့ GitHub"),
+      description: t(
+        "Synchronize work and create contributions.",
+        "အလုပ်တွေ update လုပ်ပြီး contribution တင်မယ်",
+      ),
+      commands: [
+        ["git remote -v", t("-v shows remote names and URLs", "-v က remote နာမည်နဲ့ URL ပြတယ်")],
+        ["git fetch origin", t("Download history without merging", "Merge မလုပ်ဘဲ remote history ယူမယ်")],
+        ["git pull --ff-only", t("Update without creating a merge commit", "Merge commit မဖန်တီးဘဲ update လုပ်မယ်")],
+        ["git push -u origin branch-name", t("-u links the local and remote branch", "-u က local နဲ့ remote branch ကိုချိတ်တယ်")],
+        ["gh pr create --fill", t("Open a PR using commit details", "Commit အချက်အလက်နဲ့ PR ဖွင့်မယ်")],
+      ],
+    },
+    {
+      title: t("Undo safely", "လုံခြုံစွာ ပြန်ပြင်မယ်"),
+      description: t(
+        "Use the least destructive command that solves the problem.",
+        "ပြဿနာကိုဖြေရှင်းနိုင်တဲ့ အန္တရာယ်အနည်းဆုံး command သုံးမယ်",
+      ),
+      commands: [
+        ["git restore FILE", t("Discard unstaged changes in one file", "File တစ်ခုရဲ့ unstaged changes ပယ်မယ်")],
+        ["git restore --staged FILE", t("Unstage but keep the file changes", "Changes မပျောက်ဘဲ file ကို unstage လုပ်မယ်")],
+        ["git revert COMMIT", t("Undo a shared commit with a new commit", "Shared commit ကို commit အသစ်နဲ့ ပြန်ပြင်မယ်")],
+        ["git reflog", t("Find recent HEAD positions", "HEAD အဟောင်းတွေ ရှာမယ်")],
+        ["git stash push -m \"work in progress\"", t("Temporarily store unfinished changes", "မပြီးသေးတဲ့ changes ကို ခဏသိမ်းမယ်")],
+      ],
+    },
+  ];
+
   return (
     <main className="cheatsheet-page">
       <div className="container">
         <div className="page-intro">
-          <span className="kicker">{t("QUICK COMMANDS", "COMMAND အကျဉ်း")}</span>
-          <h1>{t("Git commands you will use.", "အသုံးများတဲ့ Git command များ")}</h1>
-          <p>{t("Click a command to try it.", "စမ်းလိုတဲ့ command ကိုနှိပ်ပါ")}</p>
+          <span className="kicker">{t("PRACTICAL CHEAT SHEETS", "လက်တွေ့ CHEAT SHEETS")}</span>
+          <h1>{t("Git commands for real work.", "တကယ့်အလုပ်မှာသုံးမယ့် Git commands")}</h1>
+          <p>
+            {t(
+              "Follow a workflow in order, or tap any command to try it in the safe terminal.",
+              "Workflow တစ်ခုကို အစဉ်လိုက်လုပ်ပါ ဒါမှမဟုတ် command ကိုနှိပ်ပြီး safe terminal မှာ စမ်းပါ",
+            )}
+          </p>
+        </div>
+
+        <section className="workflow-section">
+          <div className="cheat-section-heading">
+            <span className="kicker">{t("DO THE TASK", "အလုပ်အလိုက် ကြည့်မယ်")}</span>
+            <h2>{t("Practical workflows", "လက်တွေ့ workflows")}</h2>
+          </div>
+          <div className="workflow-grid">
+            {workflows.map((workflow) => (
+              <article className="workflow-card" key={workflow.title}>
+                <h3>{workflow.title}</h3>
+                <p>{workflow.description}</p>
+                <ol>
+                  {workflow.steps.map(([command, description]) => (
+                    <li key={command}>
+                      <button onClick={() => onTry(command)}>
+                        <span>
+                          <code>{command}</code>
+                          <small>{description}</small>
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <div className="cheat-section-heading command-reference-heading">
+          <span className="kicker">{t("LOOK UP A COMMAND", "COMMAND ရှာမယ်")}</span>
+          <h2>{t("Command reference", "Command အညွှန်း")}</h2>
         </div>
         <div className="cheat-grid">
-          {groups.map(({ title, commands }) => (
+          {groups.map(({ title, description, commands }) => (
             <section className="cheat-card" key={title}>
               <div className="cheat-title">
-                <h2>{title}</h2>
+                <div>
+                  <h2>{title}</h2>
+                  <p>{description}</p>
+                </div>
               </div>
               {commands.map(([command, description]) => (
                 <button key={command} onClick={() => onTry(command)}>
@@ -1298,6 +1680,7 @@ function CheatSheet({ onTry }) {
                     <code>{command}</code>
                     <small>{description}</small>
                   </div>
+                  <span>{t("Try", "စမ်းမယ်")}</span>
                 </button>
               ))}
             </section>

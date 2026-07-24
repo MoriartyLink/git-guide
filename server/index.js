@@ -88,6 +88,35 @@ app.post("/api/terminal", (request, response) => {
     });
   }
 
+  if (command.startsWith("gh release create")) {
+    const version = command.split(" ")[3] || "v1.0.0";
+    return response.json({
+      lines: [
+        `Release ${version} created with generated notes.`,
+        `https://github.com/talkware/community/releases/tag/${version}`,
+      ],
+    });
+  }
+
+  if (command.startsWith("gh run list")) {
+    return response.json({
+      lines: [
+        "✓  CI / test     main  completed  success",
+        "✓  Deploy       main  completed  success",
+      ],
+    });
+  }
+
+  if (command.startsWith("git clone")) {
+    return response.json({
+      lines: [
+        "Cloning into 'community'...",
+        "Receiving objects: 100% (42/42), done.",
+        "Repository and its full history are ready.",
+      ],
+    });
+  }
+
   if (command.startsWith("git commit")) {
     return response.json({
       lines: [
@@ -105,6 +134,56 @@ app.post("/api/terminal", (request, response) => {
     });
   }
 
+  if (command.startsWith("git add ")) {
+    const target = command.slice("git add ".length);
+    return response.json({
+      lines: [`${target} is staged. Run git diff --staged to review it.`],
+      completed: "add",
+    });
+  }
+
+  if (command === "git diff") {
+    return response.json({
+      lines: [
+        "diff --git a/README.md b/README.md",
+        "+Add contributor setup steps",
+        "This change is not staged yet.",
+      ],
+    });
+  }
+
+  if (command.startsWith("git diff --staged")) {
+    return response.json({
+      lines: [
+        "diff --git a/README.md b/README.md",
+        "+Add contributor setup steps",
+        "This change will be included in the next commit.",
+      ],
+    });
+  }
+
+  if (command.startsWith("git show")) {
+    return response.json({
+      lines: [
+        "commit 8f31c2a",
+        "Author: Community Contributor",
+        "    Add contributor setup steps",
+        "+New setup instructions",
+      ],
+    });
+  }
+
+  if (command.startsWith("git branch -d")) {
+    const branch = command.split(" ").at(-1);
+    return response.json({ lines: [`Deleted branch ${branch} (was a92be11).`] });
+  }
+
+  if (command.startsWith("git branch")) {
+    return response.json({
+      lines: ["* main", "  feat/community-guide", "  remotes/origin/main"],
+    });
+  }
+
   if (command.startsWith("git switch -c") || command.startsWith("git checkout -b")) {
     const branch = command.split(" ").at(-1);
     return response.json({
@@ -113,10 +192,28 @@ app.post("/api/terminal", (request, response) => {
     });
   }
 
+  if (command.startsWith("git switch ")) {
+    const branch = command.split(" ").at(-1);
+    return response.json({ lines: [`Switched to branch '${branch}'`] });
+  }
+
   if (command.startsWith("git merge")) {
     return response.json({
       lines: ["Updating 8f31c2a..a92be11", "Fast-forward", " community.md | 12 ++++++++++++"],
       completed: "merge",
+    });
+  }
+
+  if (command === "git rebase --continue") {
+    return response.json({
+      lines: ["Successfully rebased and updated the current branch."],
+      completed: "rebase",
+    });
+  }
+
+  if (command === "git rebase --abort") {
+    return response.json({
+      lines: ["Rebase aborted. Your branch is back to its previous state."],
     });
   }
 
@@ -137,6 +234,22 @@ app.post("/api/terminal", (request, response) => {
         "origin  https://github.com/community/git-together.git (push)",
       ],
       completed: "remote",
+    });
+  }
+
+  if (command.startsWith("git fetch")) {
+    return response.json({
+      lines: [
+        "From github.com:talkware/community",
+        "   8f31c2a..b47ad90  main -> origin/main",
+        "Remote history downloaded. Your working files did not change.",
+      ],
+    });
+  }
+
+  if (command.startsWith("git pull")) {
+    return response.json({
+      lines: ["Updating 8f31c2a..b47ad90", "Fast-forward", "Already up to date with origin/main."],
     });
   }
 
@@ -161,6 +274,23 @@ app.post("/api/terminal", (request, response) => {
     });
   }
 
+  if (command.startsWith("git push origin v")) {
+    const version = command.split(" ").at(-1);
+    return response.json({
+      lines: [`Tag ${version} published to origin.`],
+    });
+  }
+
+  if (command.startsWith("git push --force-with-lease")) {
+    return response.json({
+      lines: [
+        "Rebased branch updated safely.",
+        "--force-with-lease confirmed that no teammate's newer remote work was overwritten.",
+      ],
+      completed: "push",
+    });
+  }
+
   if (command.startsWith("git push")) {
     return response.json({
       lines: [
@@ -169,6 +299,13 @@ app.post("/api/terminal", (request, response) => {
         "branch 'feat/community-guide' set up to track 'origin/feat/community-guide'.",
       ],
       completed: "push",
+    });
+  }
+
+  if (command.startsWith("git tag")) {
+    const version = command.split(" ").find((part) => /^v\d/.test(part)) || "v1.0.0";
+    return response.json({
+      lines: [`Annotated tag ${version} created on the current commit.`],
     });
   }
 
