@@ -12,18 +12,11 @@ import {
   Code2,
   Command,
   Copy,
-  ExternalLink,
-  Github,
   GraduationCap,
-  Lightbulb,
-  Mail,
   Menu,
-  Play,
   RotateCcw,
   Search,
-  Sparkles,
   TerminalSquare,
-  Users,
   X,
   Zap,
 } from "lucide-react";
@@ -1006,17 +999,16 @@ function Footer() {
         </div>
         <div className="footer-links">
           <a href="https://git-scm.com/doc" target="_blank" rel="noreferrer">
-            {t("Git docs", "Git လမ်းညွှန်")} <ExternalLink size={13} />
+            {t("Git docs", "Git လမ်းညွှန်")}
           </a>
           <a href="https://docs.github.com/" target="_blank" rel="noreferrer">
-            {t("GitHub docs", "GitHub လမ်းညွှန်")} <ExternalLink size={13} />
+            {t("GitHub docs", "GitHub လမ်းညွှန်")}
           </a>
         </div>
       </div>
       <div className="container footer-bottom">
         <span>{t("Made for community learners.", "Community learners များအတွက်။")}</span>
         <a href="mailto:moriartylink@gmail.com">
-          <Mail size={13} />
           {t("Contact the developer", "Developer ကိုဆက်သွယ်ရန်")} — MoriartyLink:
           moriartylink@gmail.com
         </a>

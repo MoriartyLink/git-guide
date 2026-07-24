@@ -2781,6 +2781,260 @@ footer {
   border-radius: 999px;
 }
 
+/* Readability and restraint */
+.hero {
+  min-height: 600px;
+}
+
+.hero-content {
+  display: block;
+  min-height: 560px;
+  padding: 92px 0 72px;
+}
+
+.hero-copy {
+  max-width: 820px;
+}
+
+.hero-copy > p {
+  max-width: 720px;
+  font-size: 20px;
+}
+
+.hero-actions {
+  gap: 10px;
+}
+
+.beginner-inner p,
+.section-heading > p,
+.page-intro p {
+  font-size: 16px;
+}
+
+.question-preview > div {
+  display: grid;
+  min-height: 58px;
+  grid-template-columns: 32px 1fr;
+  gap: 10px;
+  align-items: center;
+  border-radius: 14px;
+  padding: 13px 15px;
+  color: #d1d1d6;
+  background: #1c1c1e;
+  font-size: 14px;
+  font-weight: 550;
+}
+
+.question-preview > div span {
+  color: #8e8e93;
+  font-size: 12px;
+}
+
+.module-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.module-card {
+  min-height: 300px;
+  padding: 24px;
+}
+
+.module-card h3 {
+  margin-top: 24px;
+  font-size: 21px;
+}
+
+.module-card > p {
+  min-height: 66px;
+  color: #b0b0b5;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.module-number,
+.level-badge,
+.module-meta {
+  font-size: 12px;
+}
+
+.module-link {
+  min-height: 44px;
+  font-size: 14px;
+}
+
+.knowledge-tools input {
+  font-size: 16px;
+}
+
+.category-tabs {
+  gap: 9px;
+}
+
+.category-tabs button {
+  min-height: 38px;
+  padding: 8px 13px;
+  font-size: 13px;
+}
+
+.knowledge-guide h2 {
+  margin-top: 0;
+  font-size: 18px;
+}
+
+.knowledge-guide li {
+  grid-template-columns: 27px 1fr;
+  color: #b0b0b5;
+  font-size: 13px;
+}
+
+.knowledge-guide li::before {
+  width: 25px;
+  height: 25px;
+  font-size: 10px;
+}
+
+.faq-count {
+  font-size: 13px;
+}
+
+.faq-count small {
+  font-size: 12px;
+}
+
+.faq-question {
+  min-height: 72px;
+  padding: 18px 20px;
+}
+
+.faq-question small {
+  font-size: 10px;
+}
+
+.faq-question strong {
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.faq-answer {
+  padding: 0 20px 20px;
+}
+
+.faq-answer > p {
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.faq-answer > div {
+  padding: 13px;
+}
+
+.faq-answer > div span {
+  font-size: 14px;
+}
+
+.faq-answer > div small {
+  font-size: 10px;
+}
+
+.sidebar-head {
+  font-size: 14px;
+}
+
+.sidebar-progress > div:first-child,
+.lesson-group-title strong,
+.lesson-groups section > button {
+  font-size: 12px;
+}
+
+.lesson-meta > span:last-child,
+.back-link {
+  font-size: 13px;
+}
+
+.concept-visual strong {
+  font-size: 15px;
+}
+
+.concept-visual small {
+  color: #b0b0b5;
+  font-size: 13px;
+}
+
+.command-block > div,
+.command-block > div button,
+.try-command {
+  font-size: 13px;
+}
+
+.tip-box strong,
+.lesson-complete-card strong {
+  font-size: 14px;
+}
+
+.tip-box p,
+.lesson-complete-card p,
+.answer-grid button,
+.check-result {
+  font-size: 13px;
+}
+
+.quick-check-heading h2 {
+  font-size: 18px;
+}
+
+.quick-check-heading small {
+  font-size: 10px;
+}
+
+.challenge-heading strong,
+.challenge-list button strong {
+  font-size: 13px;
+}
+
+.challenge-heading small,
+.challenge-list button small,
+.safe-note span,
+.safe-note strong {
+  font-size: 11px;
+}
+
+.lab-output,
+.terminal-input-row input {
+  font-size: 13px;
+}
+
+.cheat-title {
+  min-height: 62px;
+}
+
+.cheat-title h2 {
+  font-size: 19px;
+}
+
+.cheat-card code {
+  font-size: 14px;
+}
+
+.cheat-card small {
+  font-size: 13px;
+}
+
+.cheat-card > button {
+  min-height: 68px;
+}
+
+.cheat-banner {
+  grid-template-columns: 1fr auto;
+}
+
+.footer-inner > div:first-child > p,
+.footer-links a,
+.footer-bottom,
+.footer-bottom a {
+  font-size: 12px;
+}
+
 @media (max-width: 1050px) {
   .hero-content {
     grid-template-columns: 1fr 0.9fr;
