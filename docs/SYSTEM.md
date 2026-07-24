@@ -35,8 +35,11 @@ The system does not include:
 | Design system | `src/styles.css` | Responsive black/green Apple HIG-inspired presentation |
 | Learning model | `server/guide.js` | Authoritative modules, lessons, translations, and knowledge topics |
 | Terminal fixtures | `server/content.js` | Reusable simulated command responses |
-| Web server | `server/index.js` | API routes, command matching, compression, security headers, and static hosting |
+| API application | `server/app.js` | API routes, command matching, compression, and security headers |
+| Node server | `server/index.js` | Local/Node listener and production static hosting |
+| Vercel adapters | `api/*.js` | Expose the shared API app as Vercel Functions |
 | Build configuration | `vite.config.js` | React plugin, development port, and API proxy |
+| Vercel configuration | `vercel.json` | Vite build output and SPA rewrite |
 
 ## 4. Development runtime
 
@@ -50,7 +53,8 @@ The browser therefore uses same-origin URLs during local development.
 
 ## 5. Production runtime
 
-`npm run build` writes the client bundle to `dist/`. `npm start` runs Express, which:
+`npm run build` writes the client bundle to `dist/`. For a traditional Node deployment,
+`npm start` runs Express, which:
 
 1. Adds Helmet headers
 2. Compresses responses
@@ -62,6 +66,20 @@ The browser therefore uses same-origin URLs during local development.
 Set `PORT` to change the server port.
 
 If the frontend is hosted separately, set `VITE_API_URL` during the frontend build.
+
+### Vercel runtime
+
+Vercel builds the same Vite client and maps each file in `api/` to an endpoint:
+
+| Function file | Public route |
+| --- | --- |
+| `api/health.js` | `/api/health` |
+| `api/guide.js` | `/api/guide` |
+| `api/terminal.js` | `/api/terminal` |
+
+Each function exports the shared Express application from `server/app.js`. The application does not
+call `listen()` inside Vercel. Static files come from `dist/`, and the SPA rewrite in `vercel.json`
+returns `index.html` for non-file client requests.
 
 ## 6. HTTP API
 

@@ -9,8 +9,8 @@ No login or signup is required. Learning progress stays in the learner's browser
 ## Features
 
 - English and Burmese interfaces
-- 7 learning modules with 24 beginner-focused lessons
-- 46 searchable Git and GitHub knowledge topics
+- 7 learning modules with 34 beginner-focused lessons
+- 49 searchable Git and GitHub knowledge topics
 - Interactive branch, merge, rebase, and conflict visualizations
 - Safe simulated terminal with practical Git, GitHub CLI, and SSH commands
 - Task-based cheat sheets for daily work, features, conflicts, pull requests, and releases
@@ -79,16 +79,19 @@ The production Express process serves both `dist/` and the API.
 ```text
 .
 ├── docs/                  System and architecture documentation
+├── api/                   Vercel Function entry points
 ├── server/
 │   ├── guide.js           Authoritative modules, lessons, and knowledge topics
 │   ├── content.js         Terminal response fixtures
-│   └── index.js           Express API and production static server
+│   ├── app.js             Shared Express API application
+│   └── index.js           Local/Node production listener and static server
 ├── src/
 │   ├── assets/            Git Together brand asset
 │   ├── App.jsx            Views, state, interactions, and certificate generation
 │   ├── main.jsx           React entry point
 │   └── styles.css         Responsive design system and component styles
 ├── CONTRIBUTING.md
+├── vercel.json            Vite output and SPA routing on Vercel
 └── vite.config.js
 ```
 
@@ -118,6 +121,23 @@ When changing content:
 | `POST` | `/api/terminal` | Execute a safe simulated command |
 
 The terminal never runs commands on the host operating system.
+
+## Deploy on Vercel
+
+Import the repository into Vercel and keep the framework preset set to Vite. The committed
+[`vercel.json`](vercel.json) builds `dist/`, supports SPA navigation, and preserves API routes.
+
+The files in [`api/`](api/) expose the shared Express API as Vercel Functions:
+
+- `api/health.js` → `/api/health`
+- `api/guide.js` → `/api/guide`
+- `api/terminal.js` → `/api/terminal`
+
+No `VITE_API_URL` value is needed when the frontend and functions are in the same Vercel project.
+After deployment, verify `/api/health` before testing the terminal.
+
+References: [Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite) and
+[Express on Vercel](https://vercel.com/docs/frameworks/backend/express).
 
 ## Documentation
 

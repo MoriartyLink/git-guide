@@ -42,7 +42,7 @@ flowchart TB
         State <--> LS
     end
 
-    subgraph Node_Process["Node process"]
+    subgraph API_Runtime["API runtime"]
         Express["Express middleware and routing"]
         GuideRoute["GET /api/guide"]
         TerminalRoute["POST /api/terminal"]
@@ -55,6 +55,8 @@ flowchart TB
     GuideData["server/guide.js"] --> GuideRoute
     TerminalData["server/content.js"] --> TerminalRoute
     UI -->|fetch JSON| Express
+    Vercel["api/*.js on Vercel"] --> Express
+    Node["server/index.js on Node"] --> Express
 ```
 
 ## 4. Source dependencies
@@ -66,8 +68,10 @@ flowchart LR
     App --> Asset["src/assets/git-together-logo.png"]
     App --> GuideFallback["server/guide.js"]
     App -. lazy import .-> JsPDF["jspdf"]
-    Server["server/index.js"] --> Guide["server/guide.js"]
+    Server["server/app.js"] --> Guide["server/guide.js"]
     Server --> Responses["server/content.js"]
+    NodeEntry["server/index.js"] --> Server
+    VercelEntry["api/health.js, guide.js, terminal.js"] --> Server
     Vite["vite.config.js"] --> Main
     Server --> Dist["dist/"]
 ```
@@ -329,9 +333,15 @@ flowchart LR
 flowchart LR
     Source["Source files"] --> Vite["Vite production build"]
     Vite --> Dist["dist/ assets"]
-    Dist --> Express["Express static hosting"]
-    Guide["Guide and terminal content"] --> Express
+    Dist --> Host{"Deployment target"}
+    Host -->|Node| Express["Express static hosting"]
+    Host -->|Vercel| CDN["Vercel static hosting"]
+    Guide["Guide and terminal content"] --> API["Shared Express API"]
+    API --> Express
+    API --> Functions["Vercel Functions"]
     Express --> Browser["Learner browser"]
+    CDN --> Browser
+    Functions --> Browser
 ```
 
 ## 13. Architectural decisions
