@@ -209,7 +209,7 @@ function Hero({ onStart }) {
           <p>
             {t(
               "Simple Git and GitHub lessons. Read a short step, try a command, and learn with your community.",
-              "အဆင့်တိုတိုဖတ်၊ command တစ်ခုစီစမ်း၊ Git နဲ့ GitHub ကို community နဲ့အတူ တစ်လှမ်းချင်း လေ့လာမယ်",
+              " Git နဲ့ GitHub ကို community နဲ့အတူ တစ်လှမ်းချင်း လေ့လာမယ်",
             )}
           </p>
           <div className="hero-actions">
