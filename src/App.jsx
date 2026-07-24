@@ -30,6 +30,7 @@ import {
   useRef,
   useState,
 } from "react";
+import talkwareLogo from "./assets/talkware-logo.png";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
@@ -76,7 +77,6 @@ function useStoredProgress() {
 }
 
 function Logo({ compact = false, onClick }) {
-  const { t } = useLanguage();
   return (
     <button
       className="brand"
@@ -90,7 +90,10 @@ function Logo({ compact = false, onClick }) {
       {!compact && (
         <span>
           <strong>Git Together</strong>
-          <small>{t("Community Guide", "Community လမ်းညွှန်")}</small>
+          <small className="talkware-subbrand">
+            <img src={talkwareLogo} alt="" />
+            Talkware
+          </small>
         </span>
       )}
     </button>
@@ -192,7 +195,7 @@ function MobileMenu({ open, onClose, onNavigate }) {
   );
 }
 
-function Hero({ onStart, onTerminal }) {
+function Hero({ onStart }) {
   const { t } = useLanguage();
   return (
     <section className="hero">
@@ -201,26 +204,31 @@ function Hero({ onStart, onTerminal }) {
         <div className="hero-copy">
           <div className="eyebrow-pill">
             <span className="pulse-dot" />
-            {t("Made for community learning", "Community အတွက် လုပ်ထားသည်")}
+            {t("For Talkware Community", "Talkware Community အတွက်")}
           </div>
           <h1>
-            {t("Learn Git.", "Git ကိုလေ့လာ။")}
+            {t("Learn Git.", "Git ကိုလေ့လာ")}
             <br />
-            <span>{t("Build together.", "အတူတူဖန်တီး။")}</span>
+            <span>{t("Build together.", "အတူတူဖန်တီး")}</span>
           </h1>
           <p>
             {t(
               "Simple Git and GitHub lessons. Read a short step, try a command, and learn with your community.",
-              "Git နဲ့ GitHub ကို ရိုးရိုးရှင်းရှင်း လေ့လာမယ်။ အဆင့်တိုတိုဖတ်၊ command စမ်းပြီး community နဲ့အတူ လေ့လာပါ။",
+              "Git နဲ့ GitHub ကို ရိုးရိုးရှင်းရှင်း လေ့လာမယ် အဆင့်တိုတိုဖတ်၊ command စမ်းပြီး community နဲ့အတူ လေ့လာပါ",
             )}
           </p>
           <div className="hero-actions">
             <button className="primary-button hero-button" onClick={onStart}>
               {t("Start learning", "စလေ့လာမယ်")}
             </button>
-            <button className="secondary-button hero-button" onClick={onTerminal}>
-              {t("Try terminal", "Terminal စမ်းမယ်")}
-            </button>
+            <a
+              className="secondary-button hero-button"
+              href="https://www.talkware.click/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t("Visit Talkware", "Talkware ကိုသွားမယ်")}
+            </a>
           </div>
         </div>
       </div>
@@ -230,18 +238,20 @@ function Hero({ onStart, onTerminal }) {
 
 function PathSection({ guide, completed, onOpenLesson, pathRef }) {
   const { language, t } = useLanguage();
+  const moduleCount = guide.modules.length;
+  const lessonCount = guide.modules.reduce((total, module) => total + module.lessons.length, 0);
   return (
     <section className="path-section" ref={pathRef}>
       <div className="container">
         <div className="section-heading">
           <div>
             <span className="kicker">{t("LEARNING PATH", "လေ့လာမည့် အဆင့်များ")}</span>
-            <h2>{t("Learn one small step at a time.", "အဆင့်တိုတို တစ်ခုပြီးတစ်ခု လေ့လာပါ။")}</h2>
+            <h2>{t("Learn one small step at a time.", "အဆင့်တိုတို တစ်ခုပြီးတစ်ခု လေ့လာပါ")}</h2>
           </div>
           <p>
             {t(
-              "5 modules. 15 short lessons. Every lesson has one command and one quick check.",
-              "Module ၅ ခု၊ သင်ခန်းစာတို ၁၅ ခု။ ခန်းတိုင်းမှာ command တစ်ခုနဲ့ စစ်ဆေးချက်တစ်ခု ပါတယ်။",
+              `${moduleCount} modules. ${lessonCount} short lessons. Every lesson has one command and one quick check.`,
+              `Module ${moduleCount} ခု သင်ခန်းစာတို ${lessonCount} ခု ခန်းတိုင်းမှာ command တစ်ခုနဲ့ စစ်ဆေးချက်တစ်ခု ပါတယ်`,
             )}
           </p>
         </div>
@@ -293,10 +303,10 @@ function PathSection({ guide, completed, onOpenLesson, pathRef }) {
 function BeginnerQuestions({ onKnowledge }) {
   const { t } = useLanguage();
   const questions = [
-    t("What is Git?", "Git ဆိုတာ ဘာလဲ။"),
-    t("What is a repository?", "Repository ဆိုတာ ဘာလဲ။"),
-    t("Why use a branch?", "Branch ဘာကြောင့်သုံးလဲ။"),
-    t("How do teams collaborate?", "Team က ဘယ်လိုအတူလုပ်လဲ။"),
+    t("What is Git?", "Git ဆိုတာ ဘာလဲ"),
+    t("What is a repository?", "Repository ဆိုတာ ဘာလဲ"),
+    t("Why use a branch?", "Branch ဘာကြောင့်သုံးလဲ"),
+    t("How do teams collaborate?", "Team က ဘယ်လိုအတူလုပ်လဲ"),
   ];
 
   return (
@@ -304,11 +314,11 @@ function BeginnerQuestions({ onKnowledge }) {
       <div className="container beginner-inner">
         <div>
           <span className="kicker">{t("NEW TO GIT?", "GIT ကို အခုမှ စလား")}</span>
-          <h2>{t("Start with your questions.", "သိချင်တဲ့ မေးခွန်းကနေ စပါ။")}</h2>
+          <h2>{t("Start with your questions.", "သိချင်တဲ့ မေးခွန်းကနေ စပါ")}</h2>
           <p>
             {t(
               "Simple answers to the questions every beginner asks.",
-              "အစပြုသူတိုင်း မေးလေ့ရှိတာကို ရိုးရိုးရှင်းရှင်း ဖြေပေးထားတယ်။",
+              "အစပြုသူတိုင်း မေးလေ့ရှိတာကို ရိုးရိုးရှင်းရှင်း ဖြေပေးထားတယ်",
             )}
           </p>
           <button className="primary-button" onClick={onKnowledge}>
@@ -328,13 +338,83 @@ function BeginnerQuestions({ onKnowledge }) {
   );
 }
 
-function Home({ guide, completed, onOpenLesson, onTerminal, onKnowledge }) {
+function ReferenceRepositories() {
+  const { t } = useLanguage();
+  const repositories = [
+    {
+      name: "torvalds/linux",
+      owner: "Linus Torvalds & Linux maintainers",
+      url: "https://github.com/torvalds/linux",
+      copy: t(
+        "Study a large maintainer-led project, its history, reviews, and contribution rules",
+        "Maintainer ဦးဆောင်တဲ့ project ကြီးရဲ့ history review နဲ့ contribution rules ကိုကြည့်ပါ",
+      ),
+    },
+    {
+      name: "git/git",
+      owner: "Git project",
+      url: "https://github.com/git/git",
+      copy: t(
+        "See how the Git project documents patches, reviews, and contribution standards",
+        "Git project က patch review နဲ့ contribution standards ကို ဘယ်လိုရေးထားလဲ ကြည့်ပါ",
+      ),
+    },
+    {
+      name: "firstcontributions/first-contributions",
+      owner: "First Contributions",
+      url: "https://github.com/firstcontributions/first-contributions",
+      copy: t(
+        "Practice the beginner fork, branch, commit, and pull-request workflow",
+        "အစပြုသူ fork branch commit နဲ့ pull request workflow ကိုလေ့ကျင့်ပါ",
+      ),
+    },
+    {
+      name: "github/docs",
+      owner: "GitHub",
+      url: "https://github.com/github/docs",
+      copy: t(
+        "Read a clear public contribution guide from a documentation project",
+        "Documentation project ရဲ့ ရှင်းတဲ့ public contribution guide ကိုဖတ်ပါ",
+      ),
+    },
+  ];
+
+  return (
+    <section className="reference-section">
+      <div className="container">
+        <div className="section-heading">
+          <div>
+            <span className="kicker">{t("WORKFLOW REFERENCES", "WORKFLOW ကို လေ့လာရန်")}</span>
+            <h2>{t("Learn from real repositories", "Repository အစစ်တွေကနေ လေ့လာပါ")}</h2>
+          </div>
+          <p>
+            {t(
+              "Open the repository, read CONTRIBUTING, inspect branches and commits, then compare its workflow with this guide",
+              "Repository ကိုဖွင့်၊ CONTRIBUTING ဖတ်၊ branches နဲ့ commits ကြည့်ပြီး ဒီ guide နဲ့ workflow နှိုင်းယှဉ်ပါ",
+            )}
+          </p>
+        </div>
+        <div className="reference-grid">
+          {repositories.map((repository) => (
+            <a key={repository.name} href={repository.url} target="_blank" rel="noreferrer">
+              <small>{repository.owner}</small>
+              <strong>{repository.name}</strong>
+              <p>{repository.copy}</p>
+              <span>{t("Open repository", "Repository ဖွင့်မယ်")}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Home({ guide, completed, onOpenLesson, onKnowledge }) {
   const pathRef = useRef(null);
   return (
     <>
       <Hero
         onStart={() => pathRef.current?.scrollIntoView({ behavior: "smooth" })}
-        onTerminal={onTerminal}
       />
       <BeginnerQuestions onKnowledge={onKnowledge} />
       <PathSection
@@ -343,6 +423,7 @@ function Home({ guide, completed, onOpenLesson, onTerminal, onKnowledge }) {
         onOpenLesson={onOpenLesson}
         pathRef={pathRef}
       />
+      <ReferenceRepositories />
     </>
   );
 }
@@ -370,11 +451,11 @@ function KnowledgePage({ topics }) {
       <div className="container">
         <div className="page-intro knowledge-intro">
           <span className="kicker">{t("BEGINNER KNOWLEDGE", "အစပြုသူ အခြေခံဗဟုသုတ")}</span>
-          <h1>{t("Git questions, answered simply.", "Git မေးခွန်းများကို ရိုးရှင်းစွာ ဖြေမယ်။")}</h1>
+          <h1>{t("Git questions, answered simply.", "Git မေးခွန်းများကို ရိုးရှင်းစွာ ဖြေမယ်")}</h1>
           <p>
             {t(
               "No long definitions. Open a question, read the short answer, and see one example.",
-              "စာရှည်ကြီး မရှိပါ။ မေးခွန်းဖွင့်၊ အဖြေတိုတိုဖတ်၊ ဥပမာတစ်ခုကြည့်ပါ။",
+              "စာရှည်ကြီး မရှိပါ မေးခွန်းဖွင့်၊ အဖြေတိုတိုဖတ်၊ ဥပမာတစ်ခုကြည့်ပါ",
             )}
           </p>
         </div>
@@ -420,7 +501,7 @@ function KnowledgePage({ topics }) {
           <section className="faq-list">
             <div className="faq-count">
               <span>{visibleTopics.length} {t("answers", "အဖြေ")}</span>
-              <small>{t("Click a question to open it.", "မေးခွန်းကို နှိပ်ပြီးဖွင့်ပါ။")}</small>
+              <small>{t("Click a question to open it.", "မေးခွန်းကို နှိပ်ပြီးဖွင့်ပါ")}</small>
             </div>
             {visibleTopics.map((topic) => {
               const isOpen = openTopic === topic.id;
@@ -453,7 +534,7 @@ function KnowledgePage({ topics }) {
             })}
             {!visibleTopics.length && (
               <div className="empty-knowledge">
-                <strong>{t("No answer found.", "အဖြေ မတွေ့ပါ။")}</strong>
+                <strong>{t("No answer found.", "အဖြေ မတွေ့ပါ")}</strong>
                 <button onClick={() => { setQuery(""); setCategory("all"); }}>
                   {t("Show all questions", "မေးခွန်းအားလုံး ပြမယ်")}
                 </button>
@@ -604,10 +685,259 @@ function QuickCheck({ check }) {
         <p className={isCorrect ? "check-result correct" : "check-result wrong"}>
           {isCorrect
             ? check.success
-            : t("Not yet. Choose another answer.", "မမှန်သေးပါ။ နောက်တစ်ခု ရွေးပါ။")}
+            : t("Not yet. Choose another answer.", "မမှန်သေးပါ နောက်တစ်ခု ရွေးပါ")}
         </p>
       )}
     </section>
+  );
+}
+
+function getGitMap(lessonId, phase, t) {
+  const baseNodes = [
+    { id: "a", x: 42, y: 72 },
+    { id: "b", x: 110, y: 72 },
+    { id: "c", x: 178, y: 72 },
+  ];
+  const baseEdges = [
+    ["a", "b"],
+    ["b", "c"],
+  ];
+  const mainOnly = {
+    nodes: baseNodes,
+    edges: baseEdges,
+    labels: [{ x: 178, y: 44, text: "main • HEAD", tone: "main" }],
+    note: t("HEAD points to the latest commit on main.", "HEAD က main ရဲ့ နောက်ဆုံး commit ကိုညွှန်တယ်"),
+  };
+
+  if (lessonId === "first-repository") {
+    return phase === "before"
+      ? {
+          nodes: [],
+          edges: [],
+          labels: [{ x: 35, y: 73, text: t("No Git history yet", "Git history မရှိသေး") }],
+          note: t("This folder is not a repository yet.", "ဒီ folder က repository မဖြစ်သေးပါ"),
+        }
+      : {
+          nodes: [{ id: "a", x: 70, y: 72 }],
+          edges: [],
+          labels: [{ x: 70, y: 44, text: "main • HEAD", tone: "main" }],
+          note: t("Git is ready to record the first commit.", "Git က ပထမ commit သိမ်းဖို့ အဆင်သင့်ဖြစ်ပြီ"),
+        };
+  }
+
+  if (lessonId === "create-branch" || lessonId === "fork-solve-issue") {
+    return phase === "before"
+      ? mainOnly
+      : {
+          nodes: baseNodes,
+          edges: baseEdges,
+          labels: [
+            { x: 178, y: 42, text: "main", tone: "main" },
+            { x: 178, y: 111, text: "feat/community • HEAD", tone: "feature" },
+          ],
+          pointers: [{ x1: 178, y1: 98, x2: 178, y2: 82, tone: "feature" }],
+          note: t("The new branch starts at the same commit as main.", "Branch အသစ်က main နဲ့ commit တစ်ခုတည်းမှာ စတယ်"),
+        };
+  }
+
+  const diverged = {
+    nodes: [
+      ...baseNodes,
+      { id: "d", x: 178, y: 144, tone: "feature" },
+      { id: "e", x: 246, y: 144, tone: "feature" },
+    ],
+    edges: [
+      ...baseEdges,
+      ["b", "d", "feature"],
+      ["d", "e", "feature"],
+    ],
+    labels: [
+      { x: 178, y: 44, text: "main", tone: "main" },
+      { x: 246, y: 178, text: "feat/community • HEAD", tone: "feature" },
+    ],
+    note: t("The feature branch has two commits not on main.", "Feature branch မှာ main မရှိသေးတဲ့ commit နှစ်ခုရှိတယ်"),
+  };
+
+  if (lessonId === "switch-merge") {
+    if (phase === "before") return diverged;
+    return {
+      nodes: [
+        ...diverged.nodes,
+        { id: "f", x: 298, y: 72, tone: "merge" },
+      ],
+      edges: [
+        ...diverged.edges,
+        ["c", "f"],
+        ["e", "f", "feature"],
+      ],
+      labels: [
+        { x: 298, y: 44, text: "main • HEAD", tone: "main" },
+        { x: 246, y: 178, text: "feat/community", tone: "feature" },
+      ],
+      note: t("Main moves to a merge commit that joins both histories.", "Main က history နှစ်ခုကို ဆက်တဲ့ merge commit ဆီရွှေ့တယ်"),
+    };
+  }
+
+  if (lessonId === "rebase-branch") {
+    if (phase === "before") return diverged;
+    return {
+      nodes: [
+        ...baseNodes,
+        { id: "d2", x: 246, y: 72, tone: "feature" },
+        { id: "e2", x: 314, y: 72, tone: "feature" },
+      ],
+      edges: [
+        ...baseEdges,
+        ["c", "d2", "feature"],
+        ["d2", "e2", "feature"],
+      ],
+      labels: [
+        { x: 178, y: 44, text: "main", tone: "main" },
+        { x: 286, y: 112, text: "feat/community • HEAD", tone: "feature" },
+      ],
+      note: t("Feature commits move after the newest main commit.", "Feature commits က main အသစ်ဆုံး commit နောက်ကို ရွှေ့သွားတယ်"),
+    };
+  }
+
+  if (lessonId === "merge-conflicts") {
+    if (phase === "before") {
+      return {
+        ...diverged,
+        nodes: diverged.nodes.map((node) =>
+          node.id === "c" || node.id === "e" ? { ...node, tone: "conflict" } : node,
+        ),
+        note: t("Main and feature changed the same code.", "Main နဲ့ feature က code တစ်နေရာတည်းကို ပြင်ထားတယ်"),
+      };
+    }
+    return {
+      nodes: [
+        ...diverged.nodes,
+        { id: "f", x: 298, y: 72, tone: "merge" },
+      ],
+      edges: [
+        ...diverged.edges,
+        ["c", "f"],
+        ["e", "f", "feature"],
+      ],
+      labels: [
+        { x: 298, y: 44, text: "main • HEAD", tone: "main" },
+        { x: 246, y: 178, text: "conflict resolved", tone: "feature" },
+      ],
+      note: t("After you choose the correct code, both lines can join.", "မှန်တဲ့ code ရွေးပြီးရင် branch နှစ်ခု ပြန်ပေါင်းနိုင်တယ်"),
+    };
+  }
+
+  const commitLessons = ["make-commit", "revert-commit"];
+  if (commitLessons.includes(lessonId) && phase === "after") {
+    return {
+      nodes: [...baseNodes, { id: "d", x: 246, y: 72, tone: "new" }],
+      edges: [...baseEdges, ["c", "d"]],
+      labels: [{ x: 246, y: 44, text: "main • HEAD", tone: "main" }],
+      note: t("A new commit is added. HEAD and main move to it.", "Commit အသစ်ထည့်ပြီး HEAD နဲ့ main က အဲဒီဆီရွှေ့တယ်"),
+    };
+  }
+
+  if (lessonId === "stage-files") {
+    return {
+      ...mainOnly,
+      note:
+        phase === "before"
+          ? t("Your file is changed but not staged.", "File ပြင်ထားပေမယ့် stage မလုပ်ရသေး")
+          : t("Staging changes files, but the Git map does not move until commit.", "Stage လုပ်တာနဲ့ Git map မရွှေ့သေးပါ Commit လုပ်မှရွှေ့တယ်"),
+    };
+  }
+
+  return mainOnly;
+}
+
+function GitMap({ lesson }) {
+  const { t } = useLanguage();
+  const [phase, setPhase] = useState("after");
+  const graph = getGitMap(lesson.id, phase, t);
+  const nodeById = Object.fromEntries(graph.nodes.map((node) => [node.id, node]));
+
+  return (
+    <>
+      <div className="map-switch" aria-label={t("Git map state", "Git map အခြေအနေ")}>
+        <button className={phase === "before" ? "active" : ""} onClick={() => setPhase("before")}>
+          {t("Before", "မလုပ်ခင်")}
+        </button>
+        <button className={phase === "after" ? "active" : ""} onClick={() => setPhase("after")}>
+          {t("After command", "Command ပြီး")}
+        </button>
+      </div>
+      <svg className="git-map" viewBox="0 0 350 210" role="img" aria-label={t("Git branch and commit map", "Git branch နဲ့ commit map")}>
+        {graph.edges.map(([from, to, tone = "main"]) => {
+          const start = nodeById[from];
+          const end = nodeById[to];
+          return (
+            <line
+              className={`map-edge ${tone}`}
+              key={`${from}-${to}`}
+              x1={start.x}
+              y1={start.y}
+              x2={end.x}
+              y2={end.y}
+            />
+          );
+        })}
+        {graph.pointers?.map((pointer, index) => (
+          <line
+            className={`map-edge ${pointer.tone || "main"}`}
+            key={index}
+            x1={pointer.x1}
+            y1={pointer.y1}
+            x2={pointer.x2}
+            y2={pointer.y2}
+          />
+        ))}
+        {graph.nodes.map((node, index) => (
+          <g key={node.id}>
+            <circle className={`map-node ${node.tone || "main"}`} cx={node.x} cy={node.y} r="9" />
+            <text className="map-hash" x={node.x} y={node.y + 25} textAnchor="middle">
+              {String.fromCharCode(97 + index)}{index + 1}
+            </text>
+          </g>
+        ))}
+        {graph.labels.map((label) => (
+          <text
+            className={`map-label ${label.tone || ""}`}
+            key={`${label.text}-${label.x}-${label.y}`}
+            x={label.x}
+            y={label.y}
+            textAnchor="middle"
+          >
+            {label.text}
+          </text>
+        ))}
+      </svg>
+      <p className="map-note">{graph.note}</p>
+      <div className="map-legend">
+        <span><i className="main" /> main</span>
+        <span><i className="feature" /> feature</span>
+        <span><i className="merge" /> merge / new</span>
+      </div>
+    </>
+  );
+}
+
+function LessonVisual({ lesson, onClose }) {
+  const { language, t } = useLanguage();
+
+  return (
+    <aside className="lesson-visual">
+      <div className="visual-header">
+        <span>{t("VISUAL GUIDE", "ပုံစံဖြင့် ကြည့်ရန်")}</span>
+        <button onClick={onClose}>{t("Hide", "ပိတ်မယ်")}</button>
+      </div>
+      <h2>{t("Git map", "Git map")}</h2>
+      <p>{localize(lesson, "title", language)}</p>
+      <GitMap key={lesson.id} lesson={lesson} />
+      <div className="visual-command">
+        <small>{t("COMMAND", "COMMAND")}</small>
+        <code>{lesson.command}</code>
+      </div>
+    </aside>
   );
 }
 
@@ -622,6 +952,7 @@ function LessonView({
 }) {
   const { language, t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [visualOpen, setVisualOpen] = useState(true);
   const allLessons = useMemo(
     () => guide.modules.flatMap((module) => module.lessons),
     [guide.modules],
@@ -652,10 +983,16 @@ function LessonView({
             <ArrowLeft size={17} /> {t("Home", "ပင်မ")}
           </button>
         </div>
+        <div className={`lesson-content-shell ${visualOpen ? "" : "visual-closed"}`}>
         <article className="lesson-article">
           <button className="back-link" onClick={onBack}>
             <ArrowLeft size={15} /> {t("Back to modules", "Module များသို့")}
           </button>
+          {!visualOpen && (
+            <button className="show-visual-button" onClick={() => setVisualOpen(true)}>
+              {t("Show visual guide", "ပုံစံလမ်းညွှန် ပြမယ်")}
+            </button>
+          )}
           <div className="lesson-meta">
             <span className="kicker">{localize(lesson, "eyebrow", language)}</span>
             <span>
@@ -666,21 +1003,11 @@ function LessonView({
           <h1>{localize(lesson, "title", language)}</h1>
           <p className="lesson-lead">{localize(lesson, "summary", language)}</p>
 
-          <div className="concept-visual">
-            {localize(lesson, "points", language).map((point, index) => (
-              <div key={point.title}>
-                <span>{index + 1}</span>
-                <strong>{point.title}</strong>
-                <small>{point.copy}</small>
-              </div>
-            ))}
-          </div>
-
           <h2>{t("Try the command", "Command ကို စမ်းမယ်")}</h2>
           <p>
             {t(
               "Copy it, or open the terminal and run it now.",
-              "Copy လုပ်ပါ။ ဒါမှမဟုတ် terminal ဖွင့်ပြီး အခု run ပါ။",
+              "Copy လုပ်ပါ ဒါမှမဟုတ် terminal ဖွင့်ပြီး အခု run ပါ",
             )}
           </p>
           <CommandBlock
@@ -702,8 +1029,8 @@ function LessonView({
           <div className="lesson-complete-card">
             <div>
               <div>
-                <strong>{t("Done with this lesson?", "ဒီသင်ခန်းစာ ပြီးပြီလား။")}</strong>
-                <p>{t("Save your progress.", "သင့်တိုးတက်မှုကို သိမ်းပါ။")}</p>
+                <strong>{t("Done with this lesson?", "ဒီသင်ခန်းစာ ပြီးပြီလား")}</strong>
+                <p>{t("Save your progress.", "သင့်တိုးတက်မှုကို သိမ်းပါ")}</p>
               </div>
             </div>
             <button
@@ -736,6 +1063,8 @@ function LessonView({
             </button>
           </nav>
         </article>
+        {visualOpen && <LessonVisual lesson={lesson} onClose={() => setVisualOpen(false)} />}
+        </div>
       </main>
     </div>
   );
@@ -817,11 +1146,11 @@ function TerminalLab({ completedChallenges, setCompletedChallenges, initialComma
       <div className="container">
         <div className="page-intro">
           <span className="kicker">{t("PRACTICE", "လက်တွေ့ လေ့ကျင့်မယ်")}</span>
-          <h1>{t("Try Git safely.", "Git ကို လုံခြုံစွာ စမ်းပါ။")}</h1>
+          <h1>{t("Try Git safely.", "Git ကို လုံခြုံစွာ စမ်းပါ")}</h1>
           <p>
             {t(
               "Click a task, then press Run. Commands use the backend but never change your computer.",
-              "Task တစ်ခုကိုနှိပ်ပြီး Run လုပ်ပါ။ Command တွေက backend ကိုသုံးပေမယ့် သင့် computer ကို မပြောင်းပါ။",
+              "Task တစ်ခုကိုနှိပ်ပြီး Run လုပ်ပါ Command တွေက backend ကိုသုံးပေမယ့် သင့် computer ကို မပြောင်းပါ",
             )}
           </p>
         </div>
@@ -858,7 +1187,7 @@ function TerminalLab({ completedChallenges, setCompletedChallenges, initialComma
               <Zap size={15} />
               <span>
                 <strong>{t("Safe practice", "လုံခြုံသည်")}</strong>
-                {t("Commands are simulated.", "Command များကို simulation လုပ်ထားသည်။")}
+                {t("Commands are simulated.", "Command များကို simulation လုပ်ထားသည်")}
               </span>
             </div>
           </aside>
@@ -954,8 +1283,8 @@ function CheatSheet({ onTry }) {
       <div className="container">
         <div className="page-intro">
           <span className="kicker">{t("QUICK COMMANDS", "COMMAND အကျဉ်း")}</span>
-          <h1>{t("Git commands you will use.", "အသုံးများတဲ့ Git command များ။")}</h1>
-          <p>{t("Click a command to try it.", "စမ်းလိုတဲ့ command ကိုနှိပ်ပါ။")}</p>
+          <h1>{t("Git commands you will use.", "အသုံးများတဲ့ Git command များ")}</h1>
+          <p>{t("Click a command to try it.", "စမ်းလိုတဲ့ command ကိုနှိပ်ပါ")}</p>
         </div>
         <div className="cheat-grid">
           {groups.map(({ title, commands }) => (
@@ -976,8 +1305,8 @@ function CheatSheet({ onTry }) {
         </div>
         <div className="cheat-banner">
           <div>
-            <h2>{t("Ready to practice?", "လက်တွေ့ စမ်းမလား။")}</h2>
-            <p>{t("Open the safe terminal.", "လုံခြုံတဲ့ terminal ကိုဖွင့်ပါ။")}</p>
+            <h2>{t("Ready to practice?", "လက်တွေ့ စမ်းမလား")}</h2>
+            <p>{t("Open the safe terminal.", "လုံခြုံတဲ့ terminal ကိုဖွင့်ပါ")}</p>
           </div>
           <button className="primary-button" onClick={() => onTry("git status")}>
             {t("Open terminal", "Terminal ဖွင့်မယ်")}
@@ -995,9 +1324,12 @@ function Footer() {
       <div className="container footer-inner">
         <div>
           <Logo />
-          <p>{t("Simple Git lessons for community members.", "Community members များအတွက် ရိုးရှင်းတဲ့ Git သင်ခန်းစာ။")}</p>
+          <p>{t("Simple Git lessons for community members.", "Community members များအတွက် ရိုးရှင်းတဲ့ Git သင်ခန်းစာ")}</p>
         </div>
         <div className="footer-links">
+          <a href="https://www.talkware.click/" target="_blank" rel="noreferrer">
+            Talkware Community
+          </a>
           <a href="https://git-scm.com/doc" target="_blank" rel="noreferrer">
             {t("Git docs", "Git လမ်းညွှန်")}
           </a>
@@ -1007,7 +1339,7 @@ function Footer() {
         </div>
       </div>
       <div className="container footer-bottom">
-        <span>{t("Made for community learners.", "Community learners များအတွက်။")}</span>
+        <span>{t("Made for community learners.", "Community learners များအတွက်")}</span>
         <a href="mailto:moriartylink@gmail.com">
           {t("Contact the developer", "Developer ကိုဆက်သွယ်ရန်")} — MoriartyLink:
           moriartylink@gmail.com
@@ -1026,12 +1358,16 @@ export default function App() {
   });
   const [guide, setGuide] = useState(fallbackGuide);
   const [view, setView] = useState(() => {
-    const queryView = new URLSearchParams(window.location.search).get("view");
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("lesson")) return "lesson";
+    const queryView = searchParams.get("view");
     return ["home", "knowledge", "terminal", "cheatsheet"].includes(queryView)
       ? queryView
       : "home";
   });
-  const [lessonId, setLessonId] = useState(null);
+  const [lessonId, setLessonId] = useState(
+    () => new URLSearchParams(window.location.search).get("lesson"),
+  );
   const [mobileMenu, setMobileMenu] = useState(false);
   const [completed, setCompleted] = useStoredProgress();
   const [completedChallenges, setCompletedChallenges] = useState([]);
@@ -1046,7 +1382,11 @@ export default function App() {
       .then(setGuide)
       .catch(() => {
         import("../server/guide.js").then((content) =>
-          setGuide({ name: "Git Together", modules: content.modules }),
+          setGuide({
+            name: "Git Together",
+            modules: content.modules,
+            knowledgeTopics: content.knowledgeTopics,
+          }),
         );
       });
   }, []);
@@ -1107,7 +1447,6 @@ export default function App() {
           guide={guide}
           completed={completed}
           onOpenLesson={openLesson}
-          onTerminal={() => openTerminal()}
           onKnowledge={() => navigate("knowledge")}
         />
       )}

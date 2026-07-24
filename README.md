@@ -3,8 +3,9 @@
 A public, bilingual Git and GitHub learning guide with an interactive terminal lab. The interface
 uses a clean Apple HIG-inspired dark design and does not require accounts.
 
-The guide includes 15 short English/Burmese lessons, quick knowledge checks, and 20 searchable
-beginner answers covering Git, repositories, branches, GitHub, mistakes, and collaboration.
+The guide includes 24 short English/Burmese lessons, quick knowledge checks, and 46 searchable
+beginner answers covering Git, repositories, branches, GitHub, command flags, packages, releases,
+deployments, CI/CD, collaborators, public contributors, permissions, mistakes, and collaboration.
 
 ## Run locally
 

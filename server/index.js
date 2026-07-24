@@ -40,6 +40,54 @@ app.post("/api/terminal", (request, response) => {
     return response.json({ clear: true });
   }
 
+  if (command === "ssh -V") {
+    return response.json({
+      lines: ["OpenSSH_9.7p1 is installed on this guided device."],
+      completed: "ssh-version",
+    });
+  }
+
+  if (command.startsWith("ssh-keygen")) {
+    return response.json({
+      lines: [
+        "Your identification has been saved in ~/.ssh/id_ed25519",
+        "Your public key has been saved in ~/.ssh/id_ed25519.pub",
+      ],
+      completed: "ssh-keygen",
+    });
+  }
+
+  if (command.startsWith("ssh -T git@github.com")) {
+    return response.json({
+      lines: ["Hi contributor! You've successfully authenticated with GitHub using SSH."],
+      completed: "ssh-test",
+    });
+  }
+
+  if (command.startsWith("gh issue list")) {
+    return response.json({
+      lines: [
+        "42  Fix mobile navigation spacing  good first issue",
+        "57  Improve contributor docs       help wanted",
+      ],
+      completed: "issue-list",
+    });
+  }
+
+  if (command.startsWith("gh issue create")) {
+    return response.json({
+      lines: ["Issue created: https://github.com/talkware/community/issues/63"],
+      completed: "issue-create",
+    });
+  }
+
+  if (command.startsWith("gh pr create")) {
+    return response.json({
+      lines: ["Pull request created: https://github.com/talkware/community/pull/64"],
+      completed: "pr-create",
+    });
+  }
+
   if (command.startsWith("git commit")) {
     return response.json({
       lines: [
@@ -69,6 +117,16 @@ app.post("/api/terminal", (request, response) => {
     return response.json({
       lines: ["Updating 8f31c2a..a92be11", "Fast-forward", " community.md | 12 ++++++++++++"],
       completed: "merge",
+    });
+  }
+
+  if (command.startsWith("git rebase")) {
+    return response.json({
+      lines: [
+        "Successfully rebased and updated refs/heads/feat/community-guide.",
+        "Your branch now starts from the newest main commit.",
+      ],
+      completed: "rebase",
     });
   }
 
