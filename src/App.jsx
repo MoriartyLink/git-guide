@@ -44,6 +44,7 @@ import {
   useState,
 } from "react";
 import gitTogetherLogo from "./assets/git-together-logo.png";
+import trailerVideo from "./assets/trailer.mp4";
 import GuidedGitSimulator from "./GuidedGitSimulator";
 import GuideChat from "./GuideChat";
 import { isSupabaseConfigured, supabase } from "./supabase";
@@ -1233,6 +1234,89 @@ function Hero({ onStart }) {
         </div>
       </div>
     </section>
+  );
+}
+
+function PublicLanding({ onSignIn, onSignUp }) {
+  const { language, setLanguage, t } = useLanguage();
+
+  return (
+    <main className="landing-page">
+      <div className="landing-grid" aria-hidden="true" />
+      <div className="landing-glow landing-glow-primary" aria-hidden="true" />
+      <div className="landing-glow landing-glow-secondary" aria-hidden="true" />
+
+      <header className="landing-header">
+        <Logo onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
+        <div className="landing-header-actions">
+          <button
+            className="language-toggle"
+            onClick={() => setLanguage(language === "en" ? "my" : "en")}
+            aria-label={t("Switch to Burmese", "အင်္ဂလိပ်ဘာသာပြောင်းရန်")}
+          >
+            <span className={language === "en" ? "active" : ""}>EN</span>
+            <i />
+            <span className={language === "my" ? "active" : ""}>မြန်မာ</span>
+          </button>
+          <button className="landing-sign-in" onClick={onSignIn}>
+            <LogIn size={15} />
+            {t("Sign in", "ဝင်မယ်")}
+          </button>
+        </div>
+      </header>
+
+      <section className="landing-hero">
+        <div className="landing-copy">
+          <span className="kicker">{t("A VISUAL GIT GUIDE", "မြင်ကွင်းဖြင့် လေ့လာမည့် GIT GUIDE")}</span>
+          <h1>
+            {t("Learn Git.", "Git ကိုလေ့လာ")}
+            <br />
+            <span>{t("Build together.", "အတူတူတည်ဆောက်")}</span>
+          </h1>
+          <p>
+            {t(
+              "Short bilingual lessons, safe terminal practice, and a live commit map—built to make Git clear from your first command.",
+              "ဘာသာစကားနှစ်မျိုးဖြင့် သင်ခန်းစာတိုများ၊ လုံခြုံသော terminal လေ့ကျင့်မှုနှင့် live commit map တို့ဖြင့် ပထမ command မှစ၍ Git ကိုရှင်းလင်းစွာ လေ့လာပါ",
+            )}
+          </p>
+          <div className="landing-actions">
+            <button className="primary-button landing-primary-action" onClick={onSignUp}>
+              {t("Create free account", "အခမဲ့အကောင့်ဖန်တီးမယ်")}
+              <ArrowRight size={17} />
+            </button>
+            <button className="secondary-button landing-secondary-action" onClick={onSignIn}>
+              <LogIn size={16} />
+              {t("I already have an account", "အကောင့်ရှိပြီးသားပါ")}
+            </button>
+          </div>
+          <div className="landing-highlights" aria-label={t("Guide highlights", "Guide အားသာချက်များ")}>
+            <span>{t("Short lessons", "သင်ခန်းစာတိုများ")}</span>
+            <span>{t("Guided terminal", "Guided terminal")}</span>
+            <span>{t("English + Burmese", "English + မြန်မာ")}</span>
+          </div>
+        </div>
+
+        <div className="landing-trailer">
+          <div className="landing-trailer-header">
+            <span>
+              <i />
+              {t("LEARNGIT TRAILER", "LEARNGIT TRAILER")}
+            </span>
+            <small>00:10</small>
+          </div>
+          <video
+            autoPlay
+            controls
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            src={trailerVideo}
+            aria-label={t("learnGit trailer", "learnGit မိတ်ဆက်ဗီဒီယို")}
+          />
+        </div>
+      </section>
+    </main>
   );
 }
 
@@ -3315,11 +3399,17 @@ export default function App() {
           <p>{languageValue.t("Checking your account…", "သင့်အကောင့်ကို စစ်ဆေးနေသည်…")}</p>
         </main>
       ) : !session ? (
-        <AuthModal
-          open
-          required
-          initialMode={authMode === "recovery" ? "login" : authMode}
-        />
+        <>
+          <PublicLanding
+            onSignIn={() => openAuth("login")}
+            onSignUp={() => openAuth("signup")}
+          />
+          <AuthModal
+            open={authOpen}
+            onClose={closeAuth}
+            initialMode={authMode === "recovery" ? "login" : authMode}
+          />
+        </>
       ) : (
         <div className="app-shell">
           <FirstTimeTour onNavigate={navigate} />
