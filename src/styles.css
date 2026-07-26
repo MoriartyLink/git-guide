@@ -94,13 +94,14 @@ body[data-language="my"] strong {
   width: min(1380px, calc(100% - 48px));
   height: 100%;
   margin-inline: auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
 }
 
 .brand {
   display: inline-flex;
+  justify-self: start;
   align-items: center;
   gap: 11px;
   border: 0;
@@ -177,6 +178,7 @@ body[data-language="my"] strong {
 
 .topbar-actions {
   display: flex;
+  justify-self: end;
   align-items: center;
   gap: 9px;
 }
