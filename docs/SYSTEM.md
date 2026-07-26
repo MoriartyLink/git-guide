@@ -164,6 +164,9 @@ Persistent state uses `localStorage`:
 | `git-together-language` | `"en"` or `"my"` | Last selected interface language |
 | `git-together-progress` | JSON array of lesson IDs | Completed lessons |
 
+Supabase Auth separately persists the optional account session through the Supabase client. Lesson
+progress and language preferences are not synchronized to Supabase.
+
 Non-persistent React state includes:
 
 - Current view and lesson
@@ -174,6 +177,7 @@ Non-persistent React state includes:
 - Quiz selection
 - Git-map phase
 - Certificate dialog state
+- Authentication dialog and current session state
 
 No state is synchronized between devices.
 

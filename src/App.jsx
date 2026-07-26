@@ -12,10 +12,16 @@ import {
   Command,
   Copy,
   GraduationCap,
+  LoaderCircle,
+  LockKeyhole,
+  LogIn,
+  LogOut,
+  Mail,
   Menu,
   RotateCcw,
   Search,
   TerminalSquare,
+  UserRound,
   X,
   Zap,
 } from "lucide-react";
@@ -30,6 +36,7 @@ import {
   useState,
 } from "react";
 import gitTogetherLogo from "./assets/git-together-logo.png";
+import { isSupabaseConfigured, supabase } from "./supabase";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
@@ -95,7 +102,54 @@ function Logo({ compact = false, onClick }) {
   );
 }
 
-function TopBar({ currentView, onNavigate, onOpenMenu }) {
+function AccountControl({ session, authReady, onOpenAuth, onSignOut, compact = false }) {
+  const { t } = useLanguage();
+  const email = session?.user?.email || "";
+  const label =
+    session?.user?.user_metadata?.full_name || (email ? email.split("@")[0] : t("Account", "အကောင့်"));
+
+  if (!authReady) {
+    return (
+      <span className="account-loading" aria-label={t("Loading account", "အကောင့် ဖွင့်နေသည်")}>
+        <LoaderCircle size={16} />
+      </span>
+    );
+  }
+
+  if (!session) {
+    return (
+      <button className="account-sign-in" data-compact={compact} onClick={onOpenAuth}>
+        <LogIn size={15} />
+        {t("Sign in", "ဝင်မယ်")}
+      </button>
+    );
+  }
+
+  return (
+    <div className="account-signed-in" data-compact={compact}>
+      <span className="account-avatar" aria-hidden="true">
+        <UserRound size={15} />
+      </span>
+      <span className="account-identity">
+        <strong>{label}</strong>
+        {!compact && <small>{email}</small>}
+      </span>
+      <button onClick={onSignOut} aria-label={t("Sign out", "အကောင့်မှ ထွက်မယ်")} title={t("Sign out", "အကောင့်မှ ထွက်မယ်")}>
+        <LogOut size={15} />
+      </button>
+    </div>
+  );
+}
+
+function TopBar({
+  currentView,
+  onNavigate,
+  onOpenMenu,
+  session,
+  authReady,
+  onOpenAuth,
+  onSignOut,
+}) {
   const { language, setLanguage, t } = useLanguage();
   return (
     <header className="topbar">
@@ -128,6 +182,12 @@ function TopBar({ currentView, onNavigate, onOpenMenu }) {
           </button>
         </nav>
         <div className="topbar-actions">
+          <AccountControl
+            session={session}
+            authReady={authReady}
+            onOpenAuth={onOpenAuth}
+            onSignOut={onSignOut}
+          />
           <button
             className="language-toggle"
             onClick={() => setLanguage(language === "en" ? "my" : "en")}
@@ -146,7 +206,15 @@ function TopBar({ currentView, onNavigate, onOpenMenu }) {
   );
 }
 
-function MobileMenu({ open, onClose, onNavigate }) {
+function MobileMenu({
+  open,
+  onClose,
+  onNavigate,
+  session,
+  authReady,
+  onOpenAuth,
+  onSignOut,
+}) {
   const { language, setLanguage, t } = useLanguage();
   if (!open) return null;
   return (
@@ -185,7 +253,196 @@ function MobileMenu({ open, onClose, onNavigate }) {
         >
           {t("မြန်မာဘာသာဖြင့် ကြည့်မယ်", "View in English")}
         </button>
+        <div className="drawer-account">
+          <AccountControl
+            compact
+            session={session}
+            authReady={authReady}
+            onOpenAuth={() => {
+              onClose();
+              onOpenAuth();
+            }}
+            onSignOut={onSignOut}
+          />
+        </div>
       </div>
+    </div>
+  );
+}
+
+function AuthModal({ open, onClose }) {
+  const { t } = useLanguage();
+  const [mode, setMode] = useState("login");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const emailRef = useRef(null);
+
+  const resetFeedback = () => {
+    setError("");
+    setNotice("");
+  };
+
+  const changeMode = (nextMode) => {
+    setMode(nextMode);
+    setPassword("");
+    setConfirmation("");
+    resetFeedback();
+  };
+
+  useEffect(() => {
+    if (!open) return undefined;
+    setError("");
+    setNotice("");
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    window.setTimeout(() => emailRef.current?.focus(), 20);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  const submit = async (event) => {
+    event.preventDefault();
+    resetFeedback();
+
+    if (!isSupabaseConfigured) {
+      setError(
+        t(
+          "Supabase is not configured yet. Add VITE_SUPABASE_PUBLISHABLE_KEY to your environment.",
+          "Supabase မချိတ်ရသေးပါ VITE_SUPABASE_PUBLISHABLE_KEY ကို environment ထဲထည့်ပါ",
+        ),
+      );
+      return;
+    }
+    if (mode === "signup" && password !== confirmation) {
+      setError(t("Passwords do not match.", "Password နှစ်ခု မတူပါ"));
+      return;
+    }
+    if (password.length < 8) {
+      setError(t("Use at least 8 characters for your password.", "Password ကို အနည်းဆုံး ၈ လုံး သုံးပါ"));
+      return;
+    }
+
+    setBusy(true);
+    try {
+      if (mode === "login") {
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        if (signInError) throw signInError;
+        onClose();
+      } else {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: fullName.trim() },
+          },
+        });
+        if (signUpError) throw signUpError;
+        if (data.session) {
+          onClose();
+        } else {
+          setNotice(
+            t(
+              "Account created. Check your email to confirm your address, then sign in.",
+              "အကောင့် ဖန်တီးပြီးပါပြီ Email မှာ အတည်ပြုပြီး ဝင်ပါ",
+            ),
+          );
+          setPassword("");
+          setConfirmation("");
+        }
+      }
+    } catch (authError) {
+      setError(authError?.message || t("Authentication failed. Please try again.", "ဝင်၍မရပါ ထပ်စမ်းပါ"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+      <button className="auth-backdrop" onClick={onClose} aria-label={t("Close", "ပိတ်မယ်")} />
+      <section className="auth-card">
+        <div className="auth-card-head">
+          <span className="auth-mark">
+            <UserRound size={20} />
+          </span>
+          <button className="icon-button" onClick={onClose} aria-label={t("Close", "ပိတ်မယ်")}>
+            <X size={18} />
+          </button>
+        </div>
+        <span className="kicker">{t("YOUR ACCOUNT", "သင့်အကောင့်")}</span>
+        <h2 id="auth-title">
+          {mode === "login" ? t("Welcome back.", "ပြန်လည် ကြိုဆိုပါတယ်") : t("Learn with an account.", "အကောင့်နဲ့ လေ့လာမယ်")}
+        </h2>
+        <p>
+          {mode === "login"
+            ? t("Sign in to your Git Together account.", "Git Together အကောင့်ထဲ ဝင်ပါ")
+            : t("Create an account with your email and password.", "Email နဲ့ password သုံးပြီး အကောင့်ဖန်တီးပါ")}
+        </p>
+
+        <div className="auth-tabs" role="tablist" aria-label={t("Account options", "အကောင့် ရွေးချယ်မှု")}>
+          <button className={mode === "login" ? "active" : ""} onClick={() => changeMode("login")} role="tab" aria-selected={mode === "login"}>
+            {t("Sign in", "ဝင်မယ်")}
+          </button>
+          <button className={mode === "signup" ? "active" : ""} onClick={() => changeMode("signup")} role="tab" aria-selected={mode === "signup"}>
+            {t("Create account", "အကောင့်ဖန်တီးမယ်")}
+          </button>
+        </div>
+
+        <form className="auth-form" onSubmit={submit}>
+          {mode === "signup" && (
+            <label>
+              <span>{t("Name", "နာမည်")}</span>
+              <span className="auth-input">
+                <UserRound size={16} />
+                <input value={fullName} onChange={(event) => setFullName(event.target.value)} autoComplete="name" placeholder={t("Your name", "သင့်နာမည်")} required />
+              </span>
+            </label>
+          )}
+          <label>
+            <span>{t("Email", "Email")}</span>
+            <span className="auth-input">
+              <Mail size={16} />
+              <input ref={emailRef} type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="you@example.com" required />
+            </span>
+          </label>
+          <label>
+            <span>{t("Password", "Password")}</span>
+            <span className="auth-input">
+              <LockKeyhole size={16} />
+              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder={t("At least 8 characters", "အနည်းဆုံး ၈ လုံး")} minLength={8} required />
+            </span>
+          </label>
+          {mode === "signup" && (
+            <label>
+              <span>{t("Confirm password", "Password ထပ်ရိုက်ပါ")}</span>
+              <span className="auth-input">
+                <LockKeyhole size={16} />
+                <input type="password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="new-password" placeholder={t("Type it again", "ထပ်ရိုက်ပါ")} minLength={8} required />
+              </span>
+            </label>
+          )}
+          {error && <div className="auth-message error" role="alert">{error}</div>}
+          {notice && <div className="auth-message success" role="status">{notice}</div>}
+          <button className="primary-button auth-submit" disabled={busy}>
+            {busy && <LoaderCircle className="spinning" size={16} />}
+            {mode === "login" ? t("Sign in", "ဝင်မယ်") : t("Create account", "အကောင့်ဖန်တီးမယ်")}
+          </button>
+        </form>
+        <small className="auth-privacy">
+          {t(
+            "Authentication is securely handled by Supabase.",
+            "အကောင့် လုံခြုံရေးကို Supabase ဖြင့် စီမံထားသည်",
+          )}
+        </small>
+      </section>
     </div>
   );
 }
@@ -1752,6 +2009,9 @@ export default function App() {
     () => new URLSearchParams(window.location.search).get("lesson"),
   );
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [authOpen, setAuthOpen] = useState(false);
+  const [session, setSession] = useState(null);
+  const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
   const [completed, setCompleted] = useStoredProgress();
   const [completedChallenges, setCompletedChallenges] = useState([]);
   const [initialCommand, setInitialCommand] = useState("");
@@ -1772,6 +2032,31 @@ export default function App() {
           }),
         );
       });
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) return undefined;
+
+    let active = true;
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (active) setSession(data.session);
+      })
+      .finally(() => {
+        if (active) setAuthReady(true);
+      });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setAuthReady(true);
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -1811,6 +2096,12 @@ export default function App() {
     );
   };
 
+  const signOut = async () => {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setMobileMenu(false);
+  };
+
   const languageValue = useMemo(
     () => ({
       language,
@@ -1823,8 +2114,25 @@ export default function App() {
   return (
     <LanguageContext.Provider value={languageValue}>
     <div className="app-shell">
-      <TopBar currentView={view} onNavigate={navigate} onOpenMenu={() => setMobileMenu(true)} />
-      <MobileMenu open={mobileMenu} onClose={() => setMobileMenu(false)} onNavigate={navigate} />
+      <TopBar
+        currentView={view}
+        onNavigate={navigate}
+        onOpenMenu={() => setMobileMenu(true)}
+        session={session}
+        authReady={authReady}
+        onOpenAuth={() => setAuthOpen(true)}
+        onSignOut={signOut}
+      />
+      <MobileMenu
+        open={mobileMenu}
+        onClose={() => setMobileMenu(false)}
+        onNavigate={navigate}
+        session={session}
+        authReady={authReady}
+        onOpenAuth={() => setAuthOpen(true)}
+        onSignOut={signOut}
+      />
+      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
       {view === "home" && (
         <Home
           guide={guide}

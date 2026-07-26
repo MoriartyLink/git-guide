@@ -4,11 +4,13 @@ Git Together is a public, bilingual Git and GitHub learning guide for community 
 combines short lessons, visual Git maps, practical cheat sheets, randomized knowledge checks, a
 safe terminal simulator, and a downloadable completion certificate.
 
-No login or signup is required. Learning progress stays in the learner's browser.
+Learners can create an optional account or sign in with email and password. Learning progress still
+stays in the learner's browser.
 
 ## Features
 
 - English and Burmese interfaces
+- Optional Supabase email/password accounts with persistent sessions
 - 7 learning modules with 34 beginner-focused lessons
 - 49 searchable Git and GitHub knowledge topics
 - Interactive branch, merge, rebase, and conflict visualizations
@@ -22,6 +24,7 @@ No login or signup is required. Learning progress stays in the learner's browser
 
 - React 18 and Vite
 - Express 5
+- Supabase Auth
 - jsPDF for client-side certificate generation
 - Plain CSS
 - ESLint
@@ -71,8 +74,13 @@ Configuration:
 | --- | --- | --- | --- |
 | `PORT` | Express | `8787` | Production server port |
 | `VITE_API_URL` | Vite build | Same origin | Backend origin when frontend and API are deployed separately |
+| `VITE_SUPABASE_URL` | Vite build | Requested Supabase project URL | Supabase project API URL |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Vite build | — | Public Supabase publishable key used by Auth |
 
 The production Express process serves both `dist/` and the API.
+
+Copy `.env.example` to `.env.local` for local development and set the project's public publishable
+key. In a hosted environment, add the same variables to the deployment configuration.
 
 ## Project structure
 
@@ -148,9 +156,9 @@ References: [Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite) a
 
 ## Privacy
 
-Git Together has no accounts and does not send learner progress to the server. Language and lesson
-completion are stored in `localStorage`. The certificate is rendered and downloaded in the
-browser.
+Account email and authentication metadata are handled by Supabase when a learner chooses to sign
+up. Language and lesson completion remain in `localStorage`; they are not synced to the account.
+The certificate is rendered and downloaded in the browser.
 
 ## Contact
 

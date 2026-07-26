@@ -181,6 +181,106 @@ body[data-language="my"] strong {
   gap: 9px;
 }
 
+.account-sign-in,
+.account-signed-in {
+  display: inline-flex;
+  height: 36px;
+  align-items: center;
+  border: 1px solid #2a352d;
+  border-radius: 8px;
+  background: #0e120f;
+}
+
+.account-sign-in {
+  gap: 7px;
+  padding: 0 12px;
+  color: #dce5df;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.account-sign-in:hover {
+  border-color: rgba(74, 222, 128, 0.42);
+  color: var(--green);
+}
+
+.account-signed-in {
+  gap: 8px;
+  padding: 0 5px 0 7px;
+}
+
+.account-avatar {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  place-items: center;
+  border-radius: 6px;
+  color: #09200f;
+  background: var(--green);
+}
+
+.account-identity {
+  display: flex;
+  max-width: 130px;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.account-identity strong,
+.account-identity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-identity strong {
+  color: #dce5df;
+  font-size: 9px;
+}
+
+.account-identity small {
+  margin-top: 2px;
+  color: #657168;
+  font-size: 7px;
+}
+
+.account-signed-in > button {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  color: #6e7b72;
+  background: transparent;
+  cursor: pointer;
+}
+
+.account-signed-in > button:hover {
+  color: #f1a2a2;
+  background: rgba(239, 105, 105, 0.08);
+}
+
+.account-loading {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  color: #748077;
+}
+
+.account-loading svg,
+.spinning {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .language-toggle {
   display: inline-flex;
   height: 36px;
@@ -217,6 +317,208 @@ body[data-language="my"] strong {
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.drawer-account {
+  margin-top: 10px;
+  border-top: 1px solid #1f2821;
+  padding-top: 18px;
+}
+
+.drawer-account .account-sign-in,
+.drawer-account .account-signed-in {
+  width: 100%;
+  height: 44px;
+}
+
+.drawer-account .account-sign-in {
+  justify-content: center;
+}
+
+.drawer-account .account-identity {
+  max-width: none;
+  flex: 1;
+}
+
+.auth-modal {
+  position: fixed;
+  z-index: 200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: rgba(0, 0, 0, 0.76);
+  backdrop-filter: blur(7px);
+  cursor: default;
+}
+
+.auth-card {
+  position: relative;
+  width: min(440px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  border: 1px solid #2a352d;
+  border-radius: 16px;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 50% -20%, rgba(74, 222, 128, 0.13), transparent 42%),
+    #0c100d;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.62);
+}
+
+.auth-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.auth-mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid rgba(74, 222, 128, 0.24);
+  border-radius: 11px;
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.auth-card h2 {
+  margin: 10px 0 0;
+  font-family: "Manrope", sans-serif;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+}
+
+.auth-card > p {
+  margin: 9px 0 0;
+  color: #849087;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 24px;
+  border: 1px solid #242d26;
+  border-radius: 9px;
+  padding: 4px;
+  background: #090c0a;
+}
+
+.auth-tabs button {
+  height: 36px;
+  border: 0;
+  border-radius: 6px;
+  color: #717e75;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth-tabs button.active {
+  color: #e6ede8;
+  background: #171d18;
+  box-shadow: inset 0 0 0 1px #28322a;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.auth-form > label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #b2bcb5;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.auth-input {
+  display: flex;
+  height: 44px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #29332b;
+  border-radius: 8px;
+  padding: 0 12px;
+  color: #657168;
+  background: #0a0d0b;
+  transition: border-color 160ms ease;
+}
+
+.auth-input:focus-within {
+  border-color: rgba(74, 222, 128, 0.52);
+  color: var(--green);
+}
+
+.auth-input input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  outline: 0;
+  color: #e7ede9;
+  background: transparent;
+  font-size: 12px;
+}
+
+.auth-input input::placeholder {
+  color: #4f5b52;
+}
+
+.auth-message {
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.auth-message.error {
+  border: 1px solid rgba(239, 105, 105, 0.22);
+  color: #efaaaa;
+  background: rgba(239, 105, 105, 0.07);
+}
+
+.auth-message.success {
+  border: 1px solid rgba(74, 222, 128, 0.22);
+  color: #a7eabb;
+  background: rgba(74, 222, 128, 0.07);
+}
+
+.auth-submit {
+  width: 100%;
+  height: 44px;
+  margin-top: 2px;
+  font-size: 11px;
+}
+
+.auth-submit:disabled {
+  opacity: 0.58;
+  cursor: wait;
+}
+
+.auth-privacy {
+  display: block;
+  margin-top: 16px;
+  color: #556158;
+  text-align: center;
+  font-size: 8px;
 }
 
 .icon-button {
@@ -3715,6 +4017,12 @@ body[data-language="my"] .language-toggle {
     display: inline-grid;
   }
 
+  .topbar-actions > .account-sign-in,
+  .topbar-actions > .account-signed-in,
+  .topbar-actions > .account-loading {
+    display: none;
+  }
+
   .mobile-drawer {
     position: fixed;
     z-index: 100;
@@ -3886,6 +4194,21 @@ body[data-language="my"] .language-toggle {
 
   .topbar {
     height: 62px;
+  }
+
+  .auth-modal {
+    align-items: end;
+    padding: 0;
+  }
+
+  .auth-card {
+    width: 100%;
+    max-height: 92vh;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 18px 18px 0 0;
+    padding: 24px 20px 28px;
   }
 
   .hero {

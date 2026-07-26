@@ -11,6 +11,7 @@
     "check": "eslint ."
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.109.0",
     "compression": "^1.7.5",
     "express": "^5.1.0",
     "helmet": "^8.1.0",

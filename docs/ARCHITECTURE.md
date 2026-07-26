@@ -7,9 +7,9 @@ Git Together is a small client-server single-page application.
 - The React client owns presentation, navigation, local progress, interaction state, and PDF output
 - The Express server owns guide delivery, simulated terminal behavior, and production static hosting
 - Static JavaScript objects are the content store
-- Browser `localStorage` is the only learner-state store
+- Browser `localStorage` stores learner progress; Supabase Auth manages optional account sessions
 
-This keeps deployment simple and avoids collecting personal data.
+This keeps learning data local while allowing learners to use an optional account.
 
 ## 2. System context
 
@@ -20,6 +20,7 @@ flowchart LR
     Source -->|Build and deploy| Server["Express + static assets"]
     Browser -->|GET guide / POST command| Server
     Browser -->|Language and progress| Storage["Browser localStorage"]
+    Browser -->|Sign up, sign in, sign out| Supabase["Supabase Auth"]
     Browser -->|Generate PDF| Download["Certificate download"]
     Browser -->|Reference links| Docs["Git, GitHub, Talkware"]
 ```
@@ -35,12 +36,16 @@ flowchart TB
         GitMap["Git map renderer"]
         PDF["Canvas + lazy-loaded jsPDF"]
         LS["localStorage"]
+        AuthClient["Supabase client"]
         UI <--> State
         UI --> Localize
         UI --> GitMap
         UI --> PDF
         State <--> LS
+        UI <--> AuthClient
     end
+
+    AuthClient <--> SupabaseAuth["Supabase Auth"]
 
     subgraph API_Runtime["API runtime"]
         Express["Express middleware and routing"]
@@ -66,6 +71,8 @@ flowchart LR
     Main["src/main.jsx"] --> App["src/App.jsx"]
     App --> Styles["src/styles.css"]
     App --> Asset["src/assets/git-together-logo.png"]
+    App --> SupabaseClient["src/supabase.js"]
+    SupabaseClient --> SupabaseJS["@supabase/supabase-js"]
     App --> GuideFallback["server/guide.js"]
     App -. lazy import .-> JsPDF["jspdf"]
     Server["server/app.js"] --> Guide["server/guide.js"]
@@ -94,6 +101,7 @@ flowchart TD
     Action -->|Complete lesson| SaveProgress["Save lesson ID locally"]
     Action -->|Run command| TerminalAPI["POST /api/terminal"]
     Action -->|Get certificate| PDF["Generate local PDF"]
+    Action -->|Manage account| Auth["Supabase Auth"]
 ```
 
 ## 6. Data schemas
