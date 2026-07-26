@@ -15,10 +15,8 @@ import {
   PanelRightClose,
   PanelRightOpen,
   Play,
-  RotateCcw,
   Target,
   TerminalSquare,
-  Undo2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -482,34 +480,7 @@ export default function GuidedGitSimulator({
             {t("Map", "Map")}
           </button>
         </div>
-        <div className="scenario-objective">
-          <div>
-            <span className="scenario-kicker">{scenario.group}</span>
-            <h2>{scenario.title}</h2>
-            <p>{scenario.goal}</p>
-          </div>
-          <div className="scenario-actions">
-            <button onClick={() => runCommand("undo")} disabled={!undoStack.length}>
-              <Undo2 size={14} />
-              {t("Undo", "Undo")}
-            </button>
-            <button onClick={() => changeScenario(scenarioId)}>
-              <RotateCcw size={14} />
-              {t("Reset", "Reset")}
-            </button>
-          </div>
-        </div>
-
         <section className="visual-terminal">
-            <div className="terminal-titlebar">
-              <span className="terminal-window-name">
-                learnGit visual engine
-                <i className="terminal-status-dot connected" />
-              </span>
-              <button onClick={() => setHistory([])} aria-label={t("Clear terminal", "Terminal ရှင်းမယ်")}>
-                <RotateCcw size={14} />
-              </button>
-            </div>
             <div className="visual-terminal-output" ref={outputRef} aria-live="polite">
               {history.map((entry, index) =>
                 entry.type === "command" ? (

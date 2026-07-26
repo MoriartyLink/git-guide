@@ -612,13 +612,6 @@ function MobileMenu({
 }
 
 function getAuthErrorMessage(error, t, operation = "") {
-  if (error?.code === "unexpected_failure" && operation === "signup") {
-    return t(
-      "The confirmation email service is unavailable. Please contact the app owner.",
-      "Confirmation email service အသုံးမပြုနိုင်ပါ App owner ကို ဆက်သွယ်ပါ",
-    );
-  }
-
   const messagesByCode = {
     email_address_invalid: t(
       "Enter a valid email address.",
@@ -675,6 +668,20 @@ function getAuthErrorMessage(error, t, operation = "") {
       normalized !== "[object Object]"
     );
   });
+
+  const isSignupServiceFailure =
+    operation === "signup" &&
+    (error?.code === "unexpected_failure" ||
+      Number(error?.status) >= 500 ||
+      /confirmation email|error sending email|unexpected failure/i.test(message || "") ||
+      !message);
+
+  if (isSignupServiceFailure) {
+    return t(
+      "The account confirmation service is unavailable. Please contact the app owner.",
+      "Account confirmation service အသုံးမပြုနိုင်ပါ App owner ကို ဆက်သွယ်ပါ",
+    );
+  }
 
   return message?.trim() || t(
     "Authentication failed. Please try again.",
@@ -1207,10 +1214,6 @@ function Hero({ onStart }) {
       <div className="hero-glow" />
       <div className="container hero-content">
         <div className="hero-copy">
-          <div className="eyebrow-pill">
-            <span className="pulse-dot" />
-            {t("For Talkware Community", "Talkware Community အတွက်")}
-          </div>
           <h1>
             {t("Learn Git.", "Git ကိုလေ့လာ")}
             <br />
@@ -1743,16 +1746,6 @@ function KnowledgePage({ topics }) {
         </div>
 
         <div className="knowledge-layout">
-          <aside className="knowledge-guide">
-            <h2>{t("Best order for beginners", "အစပြုသူအတွက် အစဉ်လိုက်")}</h2>
-            <ol>
-              <li>{t("Understand Git and repos", "Git နဲ့ repo ကိုနားလည်ပါ")}</li>
-              <li>{t("Learn commits and branches", "Commit နဲ့ branch လေ့လာပါ")}</li>
-              <li>{t("Connect to GitHub", "GitHub နဲ့ချိတ်ပါ")}</li>
-              <li>{t("Practice team workflow", "Team workflow လေ့ကျင့်ပါ")}</li>
-            </ol>
-          </aside>
-
           <section className="faq-list">
             <div className="faq-count">
               <span>{visibleTopics.length} {t("answers", "အဖြေ")}</span>
@@ -2502,7 +2495,7 @@ function TerminalLab({
 }) {
   const { t } = useLanguage();
   const terminalRef = useRef(null);
-  const [terminalMode, setTerminalMode] = useState("simulated");
+  const terminalMode = "simulated";
   const [connectionStatus, setConnectionStatus] = useState("disconnected");
 
   const challenges = [
@@ -2514,63 +2507,11 @@ function TerminalLab({
     ["push", t("Publish the branch", "Branch ကိုတင်မယ်"), "git push -u origin feat/community-guide"],
   ];
 
-  const selectTerminalMode = (mode) => {
-    terminalRef.current = null;
-    setConnectionStatus(mode === "simulated" ? "connected" : "disconnected");
-    setTerminalMode(mode);
-  };
-
   return (
     <main className="lab-page">
       <div className="container">
         <div className="page-intro">
           <span className="kicker">{t("PRACTICE", "လက်တွေ့ လေ့ကျင့်မယ်")}</span>
-          <h1>{t("Try Git safely.", "Git ကို လုံခြုံစွာ စမ်းပါ")}</h1>
-          <p>
-            {t(
-              "Type Git commands and watch commits, branches, merges, rebases, and remotes move on a live virtual map.",
-              "Git commands ရိုက်ပြီး commits branches merges rebases နဲ့ remotes များ live virtual map ပေါ်မှာ ပြောင်းလဲတာ ကြည့်ပါ",
-            )}
-          </p>
-        </div>
-        <div className="terminal-mode-picker" role="group" aria-label={t("Terminal mode", "Terminal အမျိုးအစား")}>
-          <button
-            className={terminalMode === "simulated" ? "active" : ""}
-            onClick={() => selectTerminalMode("simulated")}
-            aria-pressed={terminalMode === "simulated"}
-          >
-            <span><TerminalSquare size={18} /></span>
-            <div>
-              <strong>{t("Guided terminal", "Guided terminal")}</strong>
-              <small>
-                {t(
-                  "Instant, beginner-safe command responses. No sign-in needed.",
-                  "ချက်ချင်းသုံးနိုင်ပြီး beginner အတွက်လုံခြုံသည် အကောင့်ဝင်ရန်မလိုပါ",
-                )}
-              </small>
-            </div>
-            <i />
-          </button>
-          <button
-            className="coming-soon"
-            disabled
-            aria-disabled="true"
-          >
-            <span><LockKeyhole size={18} /></span>
-            <div>
-              <strong>
-                {t("Real sandbox", "Sandbox အစစ်")}
-                <em>{t("Coming soon", "မကြာမီ")}</em>
-              </strong>
-              <small>
-                {t(
-                  "The isolated Linux shell is being prepared for a future release.",
-                  "သီးသန့် Linux shell ကို နောက် release အတွက် ပြင်ဆင်နေသည်",
-                )}
-              </small>
-            </div>
-            <i />
-          </button>
         </div>
         {terminalMode === "simulated" ? (
           <GuidedGitSimulator

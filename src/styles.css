@@ -2379,7 +2379,7 @@ footer {
 
 .knowledge-layout {
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 22px;
   align-items: start;
   margin-top: 35px;
