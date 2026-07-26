@@ -37,7 +37,7 @@ stays in the learner's browser.
 
 Requirements:
 
-- Node.js 20.12 or newer
+- Node.js 22 or newer
 - npm 10 or newer
 
 ```bash
@@ -90,6 +90,22 @@ Copy `.env.example` to `.env` for local development and set the project's public
 and a newly rotated Groq key. The exact key name is `GROQ_API_KEY`—provider credentials must never
 use the `VITE_` prefix. Restart `npm run dev` after changing `.env`. In a hosted environment, add
 the same server variables to the deployment configuration and redeploy.
+
+For forgot-password links, add the local and deployed app URLs to **Supabase → Authentication →
+URL Configuration → Redirect URLs**. The app requests a return URL such as
+`https://your-domain.example/?password-reset=1`; Supabase returns the recovery session to that page,
+where the learner can choose a new password.
+
+Lesson completion is stored in `public.lesson_progress`. Apply the included migration after
+authenticating the CLI with an account that can manage the configured project:
+
+```bash
+npx supabase link --project-ref hiedkdrurpjriccflyph
+npx supabase db push --linked
+```
+
+The table enables row-level security and allows authenticated users to read and change only rows
+whose `user_id` matches their Supabase Auth user ID.
 
 ## Project structure
 
@@ -179,7 +195,11 @@ References: [Vite on Vercel](https://vercel.com/docs/frameworks/frontend/vite) a
 ## Privacy
 
 Account email and authentication metadata are handled by Supabase when a learner chooses to sign
-up. Language and lesson completion remain in `localStorage`; they are not synced to the account.
+up. Signed-in lesson completion is synchronized to Supabase and cached per user on the device.
+Signed-out progress stays in `localStorage` and is migrated into the learner's account at sign-in.
+Language and the one-time welcome-tour flag remain in `localStorage`.
+Profile sharing creates a URL containing only the learner's chosen display name, completed-lesson
+count, and account creation date. It does not include the learner's email address or account ID.
 Guided terminal commands change only an in-memory educational repository model in the browser.
 AI questions, recent chat turns, and selected website excerpts are sent to Groq to generate answers.
 The certificate is rendered and downloaded in the browser.

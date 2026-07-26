@@ -11,7 +11,9 @@ import {
   Clock3,
   Command,
   Copy,
+  ExternalLink,
   GraduationCap,
+  KeyRound,
   LoaderCircle,
   LockKeyhole,
   LogIn,
@@ -20,6 +22,7 @@ import {
   Menu,
   RotateCcw,
   Search,
+  Share2,
   TerminalSquare,
   UserRound,
   X,
@@ -58,6 +61,192 @@ function localize(item, field, language) {
   return item?.[field];
 }
 
+function FirstTimeTour({ onNavigate }) {
+  const { t } = useLanguage();
+  const storageKey = "learn-git-first-visit-tour";
+  const [visible, setVisible] = useState(
+    () => localStorage.getItem(storageKey) !== "complete",
+  );
+  const [activeStep, setActiveStep] = useState(0);
+  useEffect(() => {
+    if (!visible) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [visible]);
+
+  const steps = [
+    {
+      id: "home",
+      icon: BookOpen,
+      eyebrow: t("LEARN TAB", "LEARN TAB"),
+      title: t("Follow a clear learning path.", "ရှင်းလင်းတဲ့ learning path အတိုင်းသွားပါ"),
+      copy: t(
+        "Begin with Git foundations, continue through team workflows, then reach advanced rebase and contribution modules.",
+        "Git foundations ကနေစပြီး team workflows ကိုဆက်ကာ advanced rebase နဲ့ contribution modules အထိလေ့လာပါ",
+      ),
+      features: [
+        t("Beginner → Intermediate → Advanced", "Beginner → Intermediate → Advanced"),
+        t("Short lessons with one practical command", "လက်တွေ့ command တစ်ခုပါတဲ့ lesson တိုများ"),
+        t("Quick checks and saved completion", "Quick checks နဲ့ သိမ်းထားမယ့် completion"),
+      ],
+    },
+    {
+      id: "knowledge",
+      icon: CircleHelp,
+      eyebrow: t("KNOWLEDGE TAB", "KNOWLEDGE TAB"),
+      title: t("Find a simple answer quickly.", "ရိုးရှင်းတဲ့အဖြေကို မြန်မြန်ရှာပါ"),
+      copy: t(
+        "Search Git ideas, filter topics, and open practical examples whenever a command or workflow feels unclear.",
+        "Command သို့ workflow မရှင်းတဲ့အခါ Git အကြောင်းအရာရှာ၊ topic filter လုပ်ပြီး လက်တွေ့ examples ဖွင့်ပါ",
+      ),
+      features: [
+        t("Searchable beginner-friendly answers", "Search လုပ်နိုင်တဲ့ beginner-friendly answers"),
+        t("Merge, rebase, GitHub, SSH, and Windows guides", "Merge၊ rebase၊ GitHub၊ SSH နဲ့ Windows guides"),
+        t("Trusted documentation and video links", "ယုံကြည်ရတဲ့ documentation နဲ့ video links"),
+      ],
+    },
+    {
+      id: "terminal",
+      icon: TerminalSquare,
+      eyebrow: t("TERMINAL LAB", "TERMINAL LAB"),
+      title: t("Practice Git without risk.", "အန္တရာယ်မရှိဘဲ Git လေ့ကျင့်ပါ"),
+      copy: t(
+        "Run guided commands, watch branches and commits move on the map, and learn from scenario hints.",
+        "Guided commands များ run၊ map ပေါ် branches နဲ့ commits ရွေ့တာကြည့်ပြီး scenario hints ကနေ လေ့လာပါ",
+      ),
+      features: [
+        t("Choose a real workflow scenario", "တကယ့် workflow scenario တစ်ခုရွေးပါ"),
+        t("Type commands in the large guided terminal", "Guided terminal အကြီးမှာ commands ရိုက်ပါ"),
+        t("Inspect the interactive commit map", "Interactive commit map ကိုစစ်ပါ"),
+      ],
+    },
+    {
+      id: "cheatsheet",
+      icon: Command,
+      eyebrow: t("CHEAT SHEET", "CHEAT SHEET"),
+      title: t("Keep commands beside your work.", "အလုပ်လုပ်ရင်း commands ကိုဘေးမှာထားပါ"),
+      copy: t(
+        "Follow complete workflows in order or send any command directly into the guided terminal.",
+        "Workflow အပြည့်ကိုအစဉ်လိုက်လုပ် သို့ command တစ်ခုခုကို guided terminal ထဲ တိုက်ရိုက်ပို့ပါ",
+      ),
+      features: [
+        t("Task-based command sequences", "Task အလိုက် command အစဉ်များ"),
+        t("Merge, rebase, recovery, and release references", "Merge၊ rebase၊ recovery နဲ့ release references"),
+        t("One-click practice in Terminal Lab", "Terminal Lab မှာ တစ်ချက်နှိပ်ပြီးလေ့ကျင့်ပါ"),
+      ],
+    },
+  ];
+  const step = steps[activeStep];
+
+  const finish = (navigateTo = null) => {
+    localStorage.setItem(storageKey, "complete");
+    setVisible(false);
+    if (navigateTo) onNavigate(navigateTo);
+  };
+
+  if (!visible) return null;
+
+  return (
+    <div className="first-visit-tour" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+      <div className="tour-backdrop" />
+      <section className="tour-screen">
+        <header className="tour-header">
+          <Logo />
+          <button type="button" onClick={() => finish()}>
+            {t("Skip tour", "Tour ကျော်မယ်")}
+            <X size={16} />
+          </button>
+        </header>
+
+        <div className="tour-layout">
+          <aside className="tour-steps" aria-label={t("Tour steps", "Tour အဆင့်များ")}>
+            <small>{t("WELCOME TO LEARNGIT", "LEARNGIT မှ ကြိုဆိုပါတယ်")}</small>
+            <h2>{t("Four places. One Git journey.", "နေရာလေးခု Git ခရီးစဉ်တစ်ခု")}</h2>
+            {steps.map((item, index) => (
+              <button
+                type="button"
+                key={item.id}
+                className={activeStep === index ? "active" : ""}
+                onClick={() => setActiveStep(index)}
+              >
+                <span>{index + 1}</span>
+                <div>
+                  <strong>{item.eyebrow}</strong>
+                  <small>{item.title}</small>
+                </div>
+              </button>
+            ))}
+          </aside>
+
+          <main className="tour-showcase">
+            <div className="tour-window">
+              <div className="tour-window-nav">
+                {steps.map((item, index) => (
+                  <span key={item.id} className={activeStep === index ? "active" : ""}>
+                    {createElement(item.icon, { size: 15 })}
+                    {item.eyebrow.replace(" TAB", "")}
+                  </span>
+                ))}
+              </div>
+              <div className="tour-window-content">
+                <span className="tour-feature-icon">{createElement(step.icon, { size: 34 })}</span>
+                <small>{step.eyebrow}</small>
+                <h1 id="tour-title">{step.title}</h1>
+                <p>{step.copy}</p>
+                <ul>
+                  {step.features.map((feature) => (
+                    <li key={feature}><CheckCircle2 size={16} />{feature}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </main>
+        </div>
+
+        <footer className="tour-footer">
+          <span>{activeStep + 1} / {steps.length}</span>
+          <div className="tour-dots">
+            {steps.map((item, index) => (
+              <button
+                type="button"
+                key={item.id}
+                className={activeStep === index ? "active" : ""}
+                onClick={() => setActiveStep(index)}
+                aria-label={t(`Open step ${index + 1}`, `အဆင့် ${index + 1} ဖွင့်မယ်`)}
+              />
+            ))}
+          </div>
+          <div className="tour-actions">
+            <button
+              type="button"
+              className="tour-back"
+              disabled={activeStep === 0}
+              onClick={() => setActiveStep((index) => Math.max(0, index - 1))}
+            >
+              <ArrowLeft size={16} />
+              {t("Back", "နောက်သို့")}
+            </button>
+            {activeStep < steps.length - 1 ? (
+              <button type="button" className="primary-button" onClick={() => setActiveStep((index) => index + 1)}>
+                {t("Next", "ရှေ့သို့")}
+                <ArrowRight size={16} />
+              </button>
+            ) : (
+              <button type="button" className="primary-button" onClick={() => finish("home")}>
+                {t("Start learning", "စလေ့လာမယ်")}
+                <ArrowRight size={16} />
+              </button>
+            )}
+          </div>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 const fallbackGuide = {
   knowledgeTopics: [],
   modules: [
@@ -73,20 +262,143 @@ const fallbackGuide = {
   ],
 };
 
-function useStoredProgress() {
-  const [completed, setCompleted] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("git-together-progress") || "[]");
-    } catch {
-      return [];
-    }
-  });
+const GUEST_PROGRESS_KEY = "git-together-progress";
+
+function readProgress(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(value)
+      ? [...new Set(value.filter((item) => typeof item === "string"))]
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeProgress(key, lessons) {
+  localStorage.setItem(key, JSON.stringify([...new Set(lessons)]));
+}
+
+function useLessonProgress(session, authReady) {
+  const userId = session?.user?.id || null;
+  const [completed, setCompleted] = useState(() => readProgress(GUEST_PROGRESS_KEY));
+  const [syncStatus, setSyncStatus] = useState("local");
+  const [syncError, setSyncError] = useState("");
 
   useEffect(() => {
-    localStorage.setItem("git-together-progress", JSON.stringify(completed));
-  }, [completed]);
+    if (!authReady) return undefined;
+    if (!userId || !supabase) {
+      setCompleted(readProgress(GUEST_PROGRESS_KEY));
+      setSyncStatus("local");
+      setSyncError("");
+      return undefined;
+    }
 
-  return [completed, setCompleted];
+    let active = true;
+    const cacheKey = `learn-git-progress-${userId}`;
+    const cached = readProgress(cacheKey);
+    const guest = readProgress(GUEST_PROGRESS_KEY);
+    const localLessons = [...new Set([...cached, ...guest])];
+    setCompleted(localLessons);
+    setSyncStatus("syncing");
+    setSyncError("");
+
+    const synchronize = async () => {
+      const { data, error } = await supabase
+        .from("lesson_progress")
+        .select("lesson_id")
+        .eq("user_id", userId);
+
+      if (!active) return;
+      if (error) {
+        writeProgress(cacheKey, localLessons);
+        setSyncStatus("error");
+        setSyncError(error.message);
+        return;
+      }
+
+      const remoteLessons = (data || []).map((row) => row.lesson_id);
+      const merged = [...new Set([...remoteLessons, ...localLessons])];
+      const missingRemote = merged.filter((lessonId) => !remoteLessons.includes(lessonId));
+
+      if (missingRemote.length) {
+        const { error: uploadError } = await supabase
+          .from("lesson_progress")
+          .upsert(
+            missingRemote.map((lessonId) => ({ user_id: userId, lesson_id: lessonId })),
+            { onConflict: "user_id,lesson_id" },
+          );
+
+        if (!active) return;
+        if (uploadError) {
+          writeProgress(cacheKey, merged);
+          setCompleted(merged);
+          setSyncStatus("error");
+          setSyncError(uploadError.message);
+          return;
+        }
+      }
+
+      writeProgress(cacheKey, merged);
+      localStorage.removeItem(GUEST_PROGRESS_KEY);
+      setCompleted(merged);
+      setSyncStatus("synced");
+    };
+
+    void synchronize();
+    return () => {
+      active = false;
+    };
+  }, [authReady, userId]);
+
+  const toggleLesson = useCallback(
+    (lessonId) => {
+      const isCompleted = completed.includes(lessonId);
+      const nextLessons = isCompleted
+        ? completed.filter((item) => item !== lessonId)
+        : [...completed, lessonId];
+      const cacheKey = userId ? `learn-git-progress-${userId}` : GUEST_PROGRESS_KEY;
+
+      setCompleted(nextLessons);
+      writeProgress(cacheKey, nextLessons);
+
+      if (!userId || !supabase) {
+        setSyncStatus("local");
+        return;
+      }
+
+      setSyncStatus("syncing");
+      setSyncError("");
+      void (async () => {
+        const result = isCompleted
+          ? await supabase
+              .from("lesson_progress")
+              .delete()
+              .eq("user_id", userId)
+              .eq("lesson_id", lessonId)
+          : await supabase
+              .from("lesson_progress")
+              .upsert(
+                {
+                  user_id: userId,
+                  lesson_id: lessonId,
+                  completed_at: new Date().toISOString(),
+                },
+                { onConflict: "user_id,lesson_id" },
+              );
+
+        if (result.error) {
+          setSyncStatus("error");
+          setSyncError(result.error.message);
+        } else {
+          setSyncStatus("synced");
+        }
+      })();
+    },
+    [completed, userId],
+  );
+
+  return { completed, syncError, syncStatus, toggleLesson };
 }
 
 function Logo({ compact = false, onClick }) {
@@ -109,7 +421,14 @@ function Logo({ compact = false, onClick }) {
   );
 }
 
-function AccountControl({ session, authReady, onOpenAuth, onSignOut, compact = false }) {
+function AccountControl({
+  session,
+  authReady,
+  onOpenAuth,
+  onOpenProfile,
+  onSignOut,
+  compact = false,
+}) {
   const { t } = useLanguage();
   const email = session?.user?.email || "";
   const label =
@@ -125,7 +444,7 @@ function AccountControl({ session, authReady, onOpenAuth, onSignOut, compact = f
 
   if (!session) {
     return (
-      <button className="account-sign-in" data-compact={compact} onClick={onOpenAuth}>
+      <button className="account-sign-in" data-compact={compact} onClick={() => onOpenAuth("login")}>
         <LogIn size={15} />
         {t("Sign in", "ဝင်မယ်")}
       </button>
@@ -134,14 +453,21 @@ function AccountControl({ session, authReady, onOpenAuth, onSignOut, compact = f
 
   return (
     <div className="account-signed-in" data-compact={compact}>
-      <span className="account-avatar" aria-hidden="true">
-        <UserRound size={15} />
-      </span>
-      <span className="account-identity">
-        <strong>{label}</strong>
-        {!compact && <small>{email}</small>}
-      </span>
-      <button onClick={onSignOut} aria-label={t("Sign out", "အကောင့်မှ ထွက်မယ်")} title={t("Sign out", "အကောင့်မှ ထွက်မယ်")}>
+      <button
+        type="button"
+        className="account-profile-button"
+        onClick={onOpenProfile}
+        aria-label={t("Open profile", "Profile ဖွင့်မယ်")}
+      >
+        <span className="account-avatar" aria-hidden="true">
+          <UserRound size={15} />
+        </span>
+        <span className="account-identity">
+          <strong>{label}</strong>
+          {!compact && <small>{email}</small>}
+        </span>
+      </button>
+      <button className="account-sign-out" onClick={onSignOut} aria-label={t("Sign out", "အကောင့်မှ ထွက်မယ်")} title={t("Sign out", "အကောင့်မှ ထွက်မယ်")}>
         <LogOut size={15} />
       </button>
     </div>
@@ -155,6 +481,7 @@ function TopBar({
   session,
   authReady,
   onOpenAuth,
+  onOpenProfile,
   onSignOut,
 }) {
   const { language, setLanguage, t } = useLanguage();
@@ -193,6 +520,7 @@ function TopBar({
             session={session}
             authReady={authReady}
             onOpenAuth={onOpenAuth}
+            onOpenProfile={onOpenProfile}
             onSignOut={onSignOut}
           />
           <button
@@ -220,6 +548,7 @@ function MobileMenu({
   session,
   authReady,
   onOpenAuth,
+  onOpenProfile,
   onSignOut,
 }) {
   const { language, setLanguage, t } = useLanguage();
@@ -269,6 +598,10 @@ function MobileMenu({
               onClose();
               onOpenAuth();
             }}
+            onOpenProfile={() => {
+              onClose();
+              onOpenProfile();
+            }}
             onSignOut={onSignOut}
           />
         </div>
@@ -277,9 +610,9 @@ function MobileMenu({
   );
 }
 
-function AuthModal({ open, onClose }) {
+function AuthModal({ open, onClose, initialMode = "login" }) {
   const { t } = useLanguage();
-  const [mode, setMode] = useState("login");
+  const [mode, setMode] = useState(initialMode);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -303,6 +636,7 @@ function AuthModal({ open, onClose }) {
 
   useEffect(() => {
     if (!open) return undefined;
+    setMode(initialMode);
     setError("");
     setNotice("");
     const closeOnEscape = (event) => {
@@ -311,7 +645,7 @@ function AuthModal({ open, onClose }) {
     document.addEventListener("keydown", closeOnEscape);
     window.setTimeout(() => emailRef.current?.focus(), 20);
     return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [open, onClose]);
+  }, [initialMode, open, onClose]);
 
   if (!open) return null;
 
@@ -328,11 +662,11 @@ function AuthModal({ open, onClose }) {
       );
       return;
     }
-    if (mode === "signup" && password !== confirmation) {
+    if ((mode === "signup" || mode === "recovery") && password !== confirmation) {
       setError(t("Passwords do not match.", "Password နှစ်ခု မတူပါ"));
       return;
     }
-    if (password.length < 8) {
+    if (mode !== "forgot" && password.length < 8) {
       setError(t("Use at least 8 characters for your password.", "Password ကို အနည်းဆုံး ၈ လုံး သုံးပါ"));
       return;
     }
@@ -343,7 +677,7 @@ function AuthModal({ open, onClose }) {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
         onClose();
-      } else {
+      } else if (mode === "signup") {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -364,6 +698,25 @@ function AuthModal({ open, onClose }) {
           setPassword("");
           setConfirmation("");
         }
+      } else if (mode === "forgot") {
+        const resetUrl = new URL(`${window.location.origin}${window.location.pathname}`);
+        resetUrl.searchParams.set("password-reset", "1");
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: resetUrl.toString(),
+        });
+        if (resetError) throw resetError;
+        setNotice(
+          t(
+            "Password reset email sent. Open its link on this device to choose a new password.",
+            "Password reset email ပို့ပြီးပါပြီ Password အသစ်ရွေးဖို့ ဒီ device မှာ link ကိုဖွင့်ပါ",
+          ),
+        );
+      } else if (mode === "recovery") {
+        const { error: updateError } = await supabase.auth.updateUser({ password });
+        if (updateError) throw updateError;
+        setNotice(t("Password updated. You can continue learning.", "Password ပြောင်းပြီးပါပြီ ဆက်လေ့လာနိုင်ပါပြီ"));
+        setPassword("");
+        setConfirmation("");
       }
     } catch (authError) {
       setError(authError?.message || t("Authentication failed. Please try again.", "ဝင်၍မရပါ ထပ်စမ်းပါ"));
@@ -386,22 +739,28 @@ function AuthModal({ open, onClose }) {
         </div>
         <span className="kicker">{t("YOUR ACCOUNT", "သင့်အကောင့်")}</span>
         <h2 id="auth-title">
-          {mode === "login" ? t("Welcome back.", "ပြန်လည် ကြိုဆိုပါတယ်") : t("Learn with an account.", "အကောင့်နဲ့ လေ့လာမယ်")}
+          {mode === "login" && t("Welcome back.", "ပြန်လည် ကြိုဆိုပါတယ်")}
+          {mode === "signup" && t("Learn with an account.", "အကောင့်နဲ့ လေ့လာမယ်")}
+          {mode === "forgot" && t("Reset your password.", "Password ပြန်သတ်မှတ်မယ်")}
+          {mode === "recovery" && t("Choose a new password.", "Password အသစ်ရွေးမယ်")}
         </h2>
         <p>
-          {mode === "login"
-            ? t("Sign in to your learnGit account.", "learnGit အကောင့်ထဲ ဝင်ပါ")
-            : t("Create an account with your email and password.", "Email နဲ့ password သုံးပြီး အကောင့်ဖန်တီးပါ")}
+          {mode === "login" && t("Sign in to your learnGit account.", "learnGit အကောင့်ထဲ ဝင်ပါ")}
+          {mode === "signup" && t("Create an account with your email and password.", "Email နဲ့ password သုံးပြီး အကောင့်ဖန်တီးပါ")}
+          {mode === "forgot" && t("Enter your account email and we will send a secure recovery link.", "အကောင့် email ထည့်ပါ လုံခြုံတဲ့ recovery link ပို့ပေးမယ်")}
+          {mode === "recovery" && t("Use at least eight characters, then confirm the new password.", "အနည်းဆုံး ၈ လုံးသုံးပြီး password အသစ်ကို အတည်ပြုပါ")}
         </p>
 
-        <div className="auth-tabs" role="tablist" aria-label={t("Account options", "အကောင့် ရွေးချယ်မှု")}>
-          <button className={mode === "login" ? "active" : ""} onClick={() => changeMode("login")} role="tab" aria-selected={mode === "login"}>
-            {t("Sign in", "ဝင်မယ်")}
-          </button>
-          <button className={mode === "signup" ? "active" : ""} onClick={() => changeMode("signup")} role="tab" aria-selected={mode === "signup"}>
-            {t("Create account", "အကောင့်ဖန်တီးမယ်")}
-          </button>
-        </div>
+        {(mode === "login" || mode === "signup") && (
+          <div className="auth-tabs" role="tablist" aria-label={t("Account options", "အကောင့် ရွေးချယ်မှု")}>
+            <button className={mode === "login" ? "active" : ""} onClick={() => changeMode("login")} role="tab" aria-selected={mode === "login"}>
+              {t("Sign in", "ဝင်မယ်")}
+            </button>
+            <button className={mode === "signup" ? "active" : ""} onClick={() => changeMode("signup")} role="tab" aria-selected={mode === "signup"}>
+              {t("Create account", "အကောင့်ဖန်တီးမယ်")}
+            </button>
+          </div>
+        )}
 
         <form className="auth-form" onSubmit={submit}>
           {mode === "signup" && (
@@ -413,21 +772,25 @@ function AuthModal({ open, onClose }) {
               </span>
             </label>
           )}
-          <label>
-            <span>{t("Email", "Email")}</span>
-            <span className="auth-input">
-              <Mail size={16} />
-              <input ref={emailRef} type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="you@example.com" required />
-            </span>
-          </label>
-          <label>
-            <span>{t("Password", "Password")}</span>
-            <span className="auth-input">
-              <LockKeyhole size={16} />
-              <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder={t("At least 8 characters", "အနည်းဆုံး ၈ လုံး")} minLength={8} required />
-            </span>
-          </label>
-          {mode === "signup" && (
+          {mode !== "recovery" && (
+            <label>
+              <span>{t("Email", "Email")}</span>
+              <span className="auth-input">
+                <Mail size={16} />
+                <input ref={emailRef} type="email" value={email} onChange={(event) => setEmail(event.target.value)} autoComplete="email" placeholder="you@example.com" required />
+              </span>
+            </label>
+          )}
+          {mode !== "forgot" && (
+            <label>
+              <span>{mode === "recovery" ? t("New password", "Password အသစ်") : t("Password", "Password")}</span>
+              <span className="auth-input">
+                <LockKeyhole size={16} />
+                <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder={t("At least 8 characters", "အနည်းဆုံး ၈ လုံး")} minLength={8} required />
+              </span>
+            </label>
+          )}
+          {(mode === "signup" || mode === "recovery") && (
             <label>
               <span>{t("Confirm password", "Password ထပ်ရိုက်ပါ")}</span>
               <span className="auth-input">
@@ -436,12 +799,26 @@ function AuthModal({ open, onClose }) {
               </span>
             </label>
           )}
+          {mode === "login" && (
+            <button type="button" className="auth-text-button" onClick={() => changeMode("forgot")}>
+              {t("Forgot password?", "Password မေ့နေပါသလား")}
+            </button>
+          )}
           {error && <div className="auth-message error" role="alert">{error}</div>}
           {notice && <div className="auth-message success" role="status">{notice}</div>}
           <button className="primary-button auth-submit" disabled={busy}>
             {busy && <LoaderCircle className="spinning" size={16} />}
-            {mode === "login" ? t("Sign in", "ဝင်မယ်") : t("Create account", "အကောင့်ဖန်တီးမယ်")}
+            {mode === "login" && t("Sign in", "ဝင်မယ်")}
+            {mode === "signup" && t("Create account", "အကောင့်ဖန်တီးမယ်")}
+            {mode === "forgot" && t("Send reset email", "Reset email ပို့မယ်")}
+            {mode === "recovery" && t("Update password", "Password ပြောင်းမယ်")}
           </button>
+          {mode === "forgot" && (
+            <button type="button" className="auth-back-link" onClick={() => changeMode("login")}>
+              <ArrowLeft size={14} />
+              {t("Back to sign in", "Sign in ကိုပြန်မယ်")}
+            </button>
+          )}
         </form>
         <small className="auth-privacy">
           {t(
@@ -449,6 +826,272 @@ function AuthModal({ open, onClose }) {
             "အကောင့် လုံခြုံရေးကို Supabase ဖြင့် စီမံထားသည်",
           )}
         </small>
+      </section>
+    </div>
+  );
+}
+
+function encodeSharedProfile(profile) {
+  const bytes = new TextEncoder().encode(JSON.stringify(profile));
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return window.btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+}
+
+function decodeSharedProfile(value) {
+  if (!value) return null;
+  try {
+    const normalized = value.replaceAll("-", "+").replaceAll("_", "/");
+    const padding = "=".repeat((4 - (normalized.length % 4)) % 4);
+    const binary = window.atob(normalized + padding);
+    const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+    const profile = JSON.parse(new TextDecoder().decode(bytes));
+    if (typeof profile?.name !== "string") return null;
+    return {
+      name: profile.name.slice(0, 80),
+      completed: Math.max(0, Math.min(999, Number(profile.completed) || 0)),
+      joined: typeof profile.joined === "string" ? profile.joined : "",
+    };
+  } catch {
+    return null;
+  }
+}
+
+function ProfileModal({
+  open,
+  onClose,
+  session,
+  completedCount,
+  progressStatus,
+  progressError,
+  sharedProfile,
+}) {
+  const { language, t } = useLanguage();
+  const user = session?.user;
+  const [name, setName] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [busyAction, setBusyAction] = useState("");
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [shareUrl, setShareUrl] = useState("");
+
+  useEffect(() => {
+    if (!open) return;
+    setName(user?.user_metadata?.full_name || user?.email?.split("@")[0] || "");
+    setPassword("");
+    setConfirmation("");
+    setError("");
+    setNotice("");
+    setShareUrl("");
+  }, [open, user]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [onClose, open]);
+
+  if (!open) return null;
+
+  const resetFeedback = () => {
+    setError("");
+    setNotice("");
+  };
+
+  const updateName = async (event) => {
+    event.preventDefault();
+    resetFeedback();
+    if (!name.trim()) return;
+    setBusyAction("name");
+    const { error: updateError } = await supabase.auth.updateUser({
+      data: { full_name: name.trim() },
+    });
+    if (updateError) setError(updateError.message);
+    else setNotice(t("Profile name updated.", "Profile နာမည်ပြောင်းပြီးပါပြီ"));
+    setBusyAction("");
+  };
+
+  const updatePassword = async (event) => {
+    event.preventDefault();
+    resetFeedback();
+    if (password.length < 8) {
+      setError(t("Use at least 8 characters for your password.", "Password ကို အနည်းဆုံး ၈ လုံး သုံးပါ"));
+      return;
+    }
+    if (password !== confirmation) {
+      setError(t("Passwords do not match.", "Password နှစ်ခု မတူပါ"));
+      return;
+    }
+    setBusyAction("password");
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+    if (updateError) setError(updateError.message);
+    else {
+      setNotice(t("Password changed successfully.", "Password ပြောင်းပြီးပါပြီ"));
+      setPassword("");
+      setConfirmation("");
+    }
+    setBusyAction("");
+  };
+
+  const sendResetEmail = async () => {
+    resetFeedback();
+    if (!user?.email) return;
+    setBusyAction("reset");
+    const resetUrl = new URL(`${window.location.origin}${window.location.pathname}`);
+    resetUrl.searchParams.set("password-reset", "1");
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(user.email, {
+      redirectTo: resetUrl.toString(),
+    });
+    if (resetError) setError(resetError.message);
+    else setNotice(t("Password reset email sent.", "Password reset email ပို့ပြီးပါပြီ"));
+    setBusyAction("");
+  };
+
+  const shareProfile = async () => {
+    resetFeedback();
+    const profile = {
+      name: name.trim() || user?.email?.split("@")[0] || "learnGit learner",
+      completed: completedCount,
+      joined: user?.created_at || "",
+    };
+    const url = new URL(`${window.location.origin}${window.location.pathname}`);
+    url.searchParams.set("profile", encodeSharedProfile(profile));
+    if (language === "my") url.searchParams.set("lang", "my");
+    const nextShareUrl = url.toString();
+    setShareUrl(nextShareUrl);
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: t(`${profile.name}'s learnGit profile`, `${profile.name} ရဲ့ learnGit profile`),
+          text: t(
+            `${profile.name} completed ${profile.completed} learnGit lessons.`,
+            `${profile.name} က learnGit lessons ${profile.completed} ခု ပြီးထားပါတယ်`,
+          ),
+          url: nextShareUrl,
+        });
+        setNotice(t("Profile shared.", "Profile မျှဝေပြီးပါပြီ"));
+      } else {
+        await navigator.clipboard.writeText(nextShareUrl);
+        setNotice(t("Share link copied.", "Share link copy လုပ်ပြီးပါပြီ"));
+      }
+    } catch (shareError) {
+      if (shareError?.name !== "AbortError") {
+        setNotice(t("Copy the share link below.", "အောက်က share link ကို copy လုပ်ပါ"));
+      }
+    }
+  };
+
+  const profile = sharedProfile || {
+    name: name || user?.email?.split("@")[0] || t("Learner", "လေ့လာသူ"),
+    completed: completedCount,
+    joined: user?.created_at || "",
+  };
+  const joinedValue = profile.joined ? new Date(profile.joined) : null;
+  const joinedDate = joinedValue && !Number.isNaN(joinedValue.getTime())
+    ? new Intl.DateTimeFormat(language === "my" ? "my-MM" : "en", {
+        year: "numeric",
+        month: "short",
+      }).format(joinedValue)
+    : t("Not shared", "မမျှဝေထားပါ");
+
+  return (
+    <div className="auth-modal profile-modal" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+      <button className="auth-backdrop" onClick={onClose} aria-label={t("Close", "ပိတ်မယ်")} />
+      <section className="auth-card profile-card">
+        <div className="auth-card-head">
+          <span className="auth-mark"><UserRound size={20} /></span>
+          <button className="icon-button" onClick={onClose} aria-label={t("Close", "ပိတ်မယ်")}>
+            <X size={18} />
+          </button>
+        </div>
+        <span className="kicker">
+          {sharedProfile ? t("SHARED LEARNER PROFILE", "မျှဝေထားသော LEARNER PROFILE") : t("YOUR PROFILE", "သင့် PROFILE")}
+        </span>
+        <h2 id="profile-title">{profile.name}</h2>
+        <div className="profile-stats">
+          <div><strong>{profile.completed}</strong><span>{t("lessons completed", "lessons ပြီး")}</span></div>
+          <div><strong>{joinedDate}</strong><span>{t("joined learnGit", "learnGit စဝင်")}</span></div>
+        </div>
+        {!sharedProfile && progressStatus !== "synced" && (
+          <div className={`progress-sync-status ${progressStatus}`}>
+            {progressStatus === "syncing" && <LoaderCircle className="spinning" size={14} />}
+            {progressStatus === "local" && <CircleHelp size={14} />}
+            {progressStatus === "error" && <CircleHelp size={14} />}
+            <span>
+              {progressStatus === "syncing" && t("Saving lesson progress…", "Lesson progress သိမ်းနေသည်…")}
+              {progressStatus === "local" && t("Progress is stored on this device until you sign in.", "Sign in မလုပ်မချင်း progress ကို ဒီ device မှာသိမ်းထားမယ်")}
+              {progressStatus === "error" && t("Database sync is unavailable; progress is cached on this device.", "Database sync မရသေးလို့ progress ကို ဒီ device မှာ cache လုပ်ထားတယ်")}
+            </span>
+            {progressStatus === "error" && progressError && <small title={progressError}>{progressError}</small>}
+          </div>
+        )}
+
+        {sharedProfile ? (
+          <p className="profile-public-note">
+            {t(
+              "This public link contains only the learner name, progress count, and join month.",
+              "ဒီ public link မှာ learner နာမည်၊ progress count နဲ့ စဝင်တဲ့လပဲ ပါတယ်",
+            )}
+          </p>
+        ) : (
+          <>
+            <form className="profile-section" onSubmit={updateName}>
+              <div>
+                <strong>{t("Profile details", "Profile အချက်အလက်")}</strong>
+                <small>{user?.email}</small>
+              </div>
+              <label className="auth-input">
+                <UserRound size={16} />
+                <input value={name} onChange={(event) => setName(event.target.value)} maxLength={80} aria-label={t("Profile name", "Profile နာမည်")} />
+              </label>
+              <button className="secondary-button" disabled={busyAction === "name"}>
+                {busyAction === "name" ? t("Saving…", "သိမ်းနေသည်…") : t("Save name", "နာမည်သိမ်းမယ်")}
+              </button>
+            </form>
+
+            <section className="profile-section">
+              <div>
+                <strong>{t("Share your learning profile", "Learning profile မျှဝေမယ်")}</strong>
+                <small>{t("Your email and account ID are never included.", "Email နဲ့ account ID လုံးဝမပါပါ")}</small>
+              </div>
+              <button type="button" className="primary-button profile-share-button" onClick={shareProfile}>
+                <Share2 size={16} />
+                {t("Share profile", "Profile မျှဝေမယ်")}
+              </button>
+              {shareUrl && <input className="profile-share-url" readOnly value={shareUrl} aria-label={t("Profile share URL", "Profile share URL")} />}
+            </section>
+
+            <form className="profile-section" onSubmit={updatePassword}>
+              <div>
+                <strong>{t("Change password", "Password ပြောင်းမယ်")}</strong>
+                <small>{t("Use a new password with at least 8 characters.", "အနည်းဆုံး ၈ လုံးပါတဲ့ password အသစ်သုံးပါ")}</small>
+              </div>
+              <label className="auth-input">
+                <KeyRound size={16} />
+                <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength={8} placeholder={t("New password", "Password အသစ်")} />
+              </label>
+              <label className="auth-input">
+                <LockKeyhole size={16} />
+                <input type="password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="new-password" minLength={8} placeholder={t("Confirm new password", "Password အသစ် အတည်ပြုပါ")} />
+              </label>
+              <button className="secondary-button" disabled={busyAction === "password"}>
+                {busyAction === "password" ? t("Updating…", "ပြောင်းနေသည်…") : t("Update password", "Password ပြောင်းမယ်")}
+              </button>
+              <button type="button" className="auth-text-button profile-reset-button" onClick={sendResetEmail} disabled={busyAction === "reset"}>
+                <Mail size={14} />
+                {busyAction === "reset" ? t("Sending…", "ပို့နေသည်…") : t("Email me a reset link instead", "Reset link ကို email နဲ့ပို့ပါ")}
+              </button>
+            </form>
+            {error && <div className="auth-message error" role="alert">{error}</div>}
+            {notice && <div className="auth-message success" role="status">{notice}</div>}
+          </>
+        )}
       </section>
     </div>
   );
@@ -695,6 +1338,32 @@ function PathSection({ guide, completed, onOpenLesson, pathRef }) {
   const { language, t } = useLanguage();
   const moduleCount = guide.modules.length;
   const lessonCount = guide.modules.reduce((total, module) => total + module.lessons.length, 0);
+  const levels = [
+    {
+      id: "Beginner",
+      label: t("Beginner", "အစပြုသူ"),
+      copy: t("Start here and build a safe Git foundation.", "ဒီကနေစပြီး လုံခြုံတဲ့ Git အခြေခံ တည်ဆောက်ပါ"),
+    },
+    {
+      id: "Intermediate",
+      label: t("Intermediate", "အလယ်အလတ်"),
+      copy: t("Work with branches, GitHub, and recovery.", "Branches၊ GitHub နဲ့ recovery ကိုလေ့ကျင့်ပါ"),
+    },
+    {
+      id: "Advanced",
+      label: t("Advanced", "အဆင့်မြင့်"),
+      copy: t("Rewrite history carefully and contribute to real projects.", "History ကိုသေချာစွာပြန်ရေးပြီး project အစစ်များမှာ contribute လုပ်ပါ"),
+    },
+  ];
+
+  const orderedModules = [...guide.modules].sort((left, right) => {
+    const leftLevel = levels.findIndex((level) => level.id === left.difficulty);
+    const rightLevel = levels.findIndex((level) => level.id === right.difficulty);
+    return (leftLevel === -1 ? levels.length : leftLevel) -
+      (rightLevel === -1 ? levels.length : rightLevel) ||
+      Number(left.number) - Number(right.number);
+  });
+
   return (
     <section className="path-section" ref={pathRef}>
       <div className="container">
@@ -710,43 +1379,53 @@ function PathSection({ guide, completed, onOpenLesson, pathRef }) {
             )}
           </p>
         </div>
-        <div className="module-grid">
-          {guide.modules.map((module) => {
-            const moduleDone = module.lessons.filter((item) => completed.includes(item.id)).length;
-            const firstLesson = module.lessons[0];
+        <div className="learning-levels">
+          {levels.map((level) => {
+            const modules = orderedModules.filter((module) => module.difficulty === level.id);
+            if (!modules.length) return null;
             return (
-              <article className="module-card" key={module.id}>
-                <div className="module-topline">
-                  <span className="module-number">{module.number}</span>
-                  <span className="level-badge">{localize(module, "difficulty", language)}</span>
+              <section className="learning-level" key={level.id}>
+                <div className="learning-level-heading">
+                  <span>{level.label}</span>
+                  <p>{level.copy}</p>
                 </div>
-                <h3>{localize(module, "title", language)}</h3>
-                <p>{localize(module, "description", language)}</p>
-                <div className="module-meta">
-                  <span>
-                    {localize(module, "duration", language)}
-                  </span>
-                  <span>
-                    {moduleDone}/{module.lessons.length} {t("done", "ပြီး")}
-                  </span>
+                <div className="module-grid">
+                  {modules.map((module) => {
+                    const moduleDone = module.lessons.filter((item) => completed.includes(item.id)).length;
+                    const firstLesson = module.lessons[0];
+                    return (
+                      <article className="module-card" key={module.id}>
+                        <div className="module-topline">
+                          <span className="module-number">{module.number}</span>
+                          <span className="level-badge">{localize(module, "difficulty", language)}</span>
+                        </div>
+                        <h3>{localize(module, "title", language)}</h3>
+                        <p>{localize(module, "description", language)}</p>
+                        <div className="module-meta">
+                          <span>{localize(module, "duration", language)}</span>
+                          <span>{moduleDone}/{module.lessons.length} {t("done", "ပြီး")}</span>
+                        </div>
+                        <div className="module-progress">
+                          <i
+                            style={{
+                              width: `${
+                                module.lessons.length ? (moduleDone / module.lessons.length) * 100 : 0
+                              }%`,
+                            }}
+                          />
+                        </div>
+                        <button
+                          className="module-link"
+                          disabled={!firstLesson}
+                          onClick={() => firstLesson && onOpenLesson(firstLesson.id)}
+                        >
+                          {moduleDone ? t("Continue", "ဆက်လေ့လာမယ်") : t("Start", "စမယ်")}
+                        </button>
+                      </article>
+                    );
+                  })}
                 </div>
-                <div className="module-progress">
-                  <i
-                    style={{
-                      width: `${
-                        module.lessons.length ? (moduleDone / module.lessons.length) * 100 : 0
-                      }%`,
-                    }}
-                  />
-                </div>
-                <button
-                  className="module-link"
-                  disabled={!firstLesson}
-                  onClick={() => firstLesson && onOpenLesson(firstLesson.id)}
-                >
-                  {moduleDone ? t("Continue", "ဆက်လေ့လာမယ်") : t("Start", "စမယ်")}
-                </button>
-              </article>
+              </section>
             );
           })}
         </div>
@@ -833,6 +1512,24 @@ function ReferenceRepositories() {
         "Documentation project ရဲ့ ရှင်းတဲ့ public contribution guide ကိုဖတ်ပါ",
       ),
     },
+    {
+      name: "aungkokothet/talkwaremm-member-app-factory",
+      owner: t("Talkware Myanmar reference", "Talkware Myanmar reference"),
+      url: "https://github.com/aungkokothet/talkwaremm-member-app-factory",
+      copy: t(
+        "Inspect a public Talkware Myanmar member-app project, its main branch, commit history, and project structure",
+        "Public Talkware Myanmar member-app project ရဲ့ main branch၊ commit history နဲ့ project structure ကိုလေ့လာပါ",
+      ),
+    },
+    {
+      name: "freeCodeCamp/freeCodeCamp",
+      owner: t("Popular open-source learning repository", "နာမည်ကြီး open-source learning repository"),
+      url: "https://github.com/freeCodeCamp/freeCodeCamp",
+      copy: t(
+        "Explore a widely starred education codebase with a documented, beginner-friendly contribution workflow",
+        "လူကြိုက်များတဲ့ education codebase နဲ့ အစပြုသူအတွက် ရှင်းပြထားတဲ့ contribution workflow ကိုလေ့လာပါ",
+      ),
+    },
   ];
 
   return (
@@ -915,7 +1612,6 @@ function KnowledgePage({ topics }) {
             )}
           </p>
         </div>
-
         <div className="knowledge-tools">
           <label>
             <Search size={18} />
@@ -983,6 +1679,17 @@ function KnowledgePage({ topics }) {
                           {localize(topic, "example", language)}
                         </span>
                       </div>
+                      {topic.links?.length > 0 && (
+                        <div className="knowledge-links">
+                          <small>{t("LEARNING LINKS", "လေ့လာရန် LINKS")}</small>
+                          {topic.links.map((link) => (
+                            <a key={link.url} href={link.url} target="_blank" rel="noreferrer">
+                              {language === "my" ? link.myLabel || link.label : link.label}
+                              <ExternalLink size={14} />
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </article>
@@ -2065,7 +2772,6 @@ function CheatSheet({ onTry }) {
             )}
           </p>
         </div>
-
         <section className="workflow-section">
           <div className="cheat-section-heading">
             <span className="kicker">{t("DO THE TASK", "အလုပ်အလိုက် ကြည့်မယ်")}</span>
@@ -2165,6 +2871,7 @@ function Footer() {
 }
 
 export default function App() {
+  const initialSearchParams = new URLSearchParams(window.location.search);
   const [language, setLanguage] = useState(() => {
     const queryLanguage = new URLSearchParams(window.location.search).get("lang");
     return queryLanguage === "my" || queryLanguage === "en"
@@ -2184,10 +2891,24 @@ export default function App() {
     () => new URLSearchParams(window.location.search).get("lesson"),
   );
   const [mobileMenu, setMobileMenu] = useState(false);
-  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState(
+    initialSearchParams.get("password-reset") === "1" ? "recovery" : "login",
+  );
+  const [authOpen, setAuthOpen] = useState(
+    initialSearchParams.get("password-reset") === "1",
+  );
+  const [sharedProfile] = useState(() =>
+    decodeSharedProfile(initialSearchParams.get("profile")),
+  );
+  const [profileOpen, setProfileOpen] = useState(Boolean(sharedProfile));
   const [session, setSession] = useState(null);
   const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
-  const [completed, setCompleted] = useStoredProgress();
+  const {
+    completed,
+    syncError: progressError,
+    syncStatus: progressStatus,
+    toggleLesson,
+  } = useLessonProgress(session, authReady);
   const [completedChallenges, setCompletedChallenges] = useState([]);
   const [initialCommand, setInitialCommand] = useState("");
 
@@ -2223,9 +2944,13 @@ export default function App() {
       });
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
       setAuthReady(true);
+      if (event === "PASSWORD_RECOVERY") {
+        setAuthMode("recovery");
+        setAuthOpen(true);
+      }
     });
 
     return () => {
@@ -2254,6 +2979,29 @@ export default function App() {
     }
   }, []);
 
+  const openAuth = useCallback((mode = "login") => {
+    setAuthMode(mode);
+    setAuthOpen(true);
+  }, []);
+
+  const closeAuth = useCallback(() => {
+    setAuthOpen(false);
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("password-reset")) {
+      url.searchParams.delete("password-reset");
+      window.history.replaceState({}, "", url);
+    }
+  }, []);
+
+  const closeProfile = useCallback(() => {
+    setProfileOpen(false);
+    const url = new URL(window.location.href);
+    if (url.searchParams.has("profile")) {
+      url.searchParams.delete("profile");
+      window.history.replaceState({}, "", url);
+    }
+  }, []);
+
   const openLesson = (id) => {
     setLessonId(id);
     setView("lesson");
@@ -2265,15 +3013,10 @@ export default function App() {
     setLessonId(null);
   };
 
-  const toggleComplete = (id) => {
-    setCompleted((items) =>
-      items.includes(id) ? items.filter((item) => item !== id) : [...items, id],
-    );
-  };
-
   const signOut = async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
+    setProfileOpen(false);
     setMobileMenu(false);
   };
 
@@ -2289,13 +3032,15 @@ export default function App() {
   return (
     <LanguageContext.Provider value={languageValue}>
     <div className="app-shell">
+      <FirstTimeTour onNavigate={navigate} />
       <TopBar
         currentView={view}
         onNavigate={navigate}
         onOpenMenu={() => setMobileMenu(true)}
         session={session}
         authReady={authReady}
-        onOpenAuth={() => setAuthOpen(true)}
+        onOpenAuth={openAuth}
+        onOpenProfile={() => setProfileOpen(true)}
         onSignOut={signOut}
       />
       <MobileMenu
@@ -2304,10 +3049,20 @@ export default function App() {
         onNavigate={navigate}
         session={session}
         authReady={authReady}
-        onOpenAuth={() => setAuthOpen(true)}
+        onOpenAuth={openAuth}
+        onOpenProfile={() => setProfileOpen(true)}
         onSignOut={signOut}
       />
-      <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <AuthModal open={authOpen} onClose={closeAuth} initialMode={authMode} />
+      <ProfileModal
+        open={profileOpen}
+        onClose={closeProfile}
+        session={session}
+        completedCount={completed.length}
+        progressStatus={progressStatus}
+        progressError={progressError}
+        sharedProfile={sharedProfile}
+      />
       {view === "home" && (
         <Home
           guide={guide}
@@ -2324,7 +3079,7 @@ export default function App() {
           onSelect={openLesson}
           onBack={() => navigate("home")}
           onTerminal={openTerminal}
-          onToggleComplete={toggleComplete}
+          onToggleComplete={toggleLesson}
         />
       )}
       {view === "terminal" && (
@@ -2332,7 +3087,7 @@ export default function App() {
           completedChallenges={completedChallenges}
           setCompletedChallenges={setCompletedChallenges}
           initialCommand={initialCommand}
-          onOpenAuth={() => setAuthOpen(true)}
+          onOpenAuth={openAuth}
           session={session}
         />
       )}
@@ -2342,7 +3097,7 @@ export default function App() {
       <GuideChat
         apiBase={API_BASE}
         language={language}
-        onOpenAuth={() => setAuthOpen(true)}
+        onOpenAuth={openAuth}
         session={session}
         t={languageValue.t}
       />

@@ -39,7 +39,7 @@ const lesson = ({
   },
 });
 
-export const modules = [
+const learningModules = [
   {
     id: "foundations",
     number: "01",
@@ -284,7 +284,7 @@ export const modules = [
   },
   {
     id: "branching",
-    number: "03",
+    number: "04",
     title: "Use branches",
     description: "Create a branch. Merge code, rebase safely, and solve conflicts.",
     duration: "34 min",
@@ -440,7 +440,7 @@ export const modules = [
   },
   {
     id: "github",
-    number: "04",
+    number: "05",
     title: "Work on GitHub",
     description: "Connect a remote. Push work. Open and review pull requests.",
     duration: "28 min",
@@ -561,7 +561,7 @@ export const modules = [
   },
   {
     id: "recovery",
-    number: "05",
+    number: "06",
     title: "Fix mistakes",
     description: "Unstage, undo, recover work, and solve Git problems safely.",
     duration: "30 min",
@@ -717,7 +717,7 @@ export const modules = [
   },
   {
     id: "ssh-device",
-    number: "06",
+    number: "03",
     title: "Connect with SSH",
     description: "Check existing keys, create and load a key, connect GitHub, switch a remote, and troubleshoot safely.",
     duration: "48 min",
@@ -978,16 +978,16 @@ export const modules = [
   },
   {
     id: "issue-contribution",
-    number: "07",
+    number: "08",
     title: "Contribute through issues",
     description: "Choose and claim an issue, work from a fork, respond to review, and track the work in GitHub Projects.",
     duration: "72 min",
-    difficulty: "Contributor",
+    difficulty: "Advanced",
     my: {
       title: "Issue ကနေ contribute လုပ်မယ်",
       description: "Issue ရွေးပြီး claim လုပ်၊ fork ကနေပြင်၊ review ဖြေပြီး GitHub Projects မှာ အလုပ် track လုပ်မယ်",
       duration: "၇၂ မိနစ်",
-      difficulty: "Contributor",
+      difficulty: "အဆင့်မြင့်",
     },
     lessons: [
       lesson({
@@ -1342,7 +1342,136 @@ export const modules = [
       }),
     ],
   },
+  {
+    id: "rebase-workflows",
+    number: "07",
+    title: "Master rebase workflows",
+    description: "Rewrite local history intentionally, clean commits with interactive rebase, and recover from conflicts.",
+    duration: "32 min",
+    difficulty: "Advanced",
+    my: {
+      title: "Rebase workflow ကိုကျွမ်းကျင်မယ်",
+      description: "Local history ကိုသေချာစွာပြန်ရေး၊ interactive rebase နဲ့ commits ရှင်းပြီး conflict ကနေပြန်ဆက်မယ်",
+      duration: "၃၂ မိနစ်",
+      difficulty: "အဆင့်မြင့်",
+    },
+    lessons: [
+      lesson({
+        id: "rebase-mental-model",
+        title: "Choose merge or rebase",
+        titleMy: "Merge သို့ rebase ရွေးမယ်",
+        summary: "Merge preserves the branch story. Rebase rebuilds your local commits on a new base for a linear history.",
+        summaryMy: "Merge က branch history ကိုထိန်းထားတယ် Rebase က linear history ရဖို့ local commits ကို base အသစ်ပေါ် ပြန်တည်ဆောက်တယ်",
+        points: [
+          { title: "Merge", copy: "Preserve shared history and branch context." },
+          { title: "Rebase", copy: "Clean up your own unpublished branch." },
+          { title: "Protect", copy: "Do not rewrite shared commits without agreement." },
+        ],
+        pointsMy: [
+          { title: "Merge", copy: "Shared history နဲ့ branch context ကိုထိန်းပါ" },
+          { title: "Rebase", copy: "မမျှဝေရသေးတဲ့ ကိုယ့် branch ကိုရှင်းပါ" },
+          { title: "ကာကွယ်", copy: "သဘောမတူဘဲ shared commits ကိုပြန်မရေးပါနဲ့" },
+        ],
+        command: "git rebase origin/main",
+        commandLabel: "Replay your branch on the newest main",
+        commandLabelMy: "Main အသစ်ပေါ် ကိုယ့် branch commits ပြန်တင်ရန်",
+        tip: "Fetch first, then rebase the feature branch—not main.",
+        tipMy: "Fetch အရင်လုပ်ပြီး main မဟုတ်ဘဲ feature branch ကို rebase လုပ်ပါ",
+        challenge: "rebase",
+        check: {
+          question: "Which branch is safest to rebase?",
+          options: ["Your unpublished feature branch", "A shared main branch", "A teammate's branch"],
+          correct: 0,
+          success: "Correct. Rebase history you own and have not shared.",
+        },
+        checkMy: {
+          question: "ဘယ် branch ကို rebase လုပ်တာ အလုံခြုံဆုံးလဲ",
+          options: ["မမျှဝေရသေးတဲ့ ကိုယ့် feature branch", "Shared main branch", "Teammate branch"],
+          correct: 0,
+          success: "မှန်ပါတယ် ကိုယ်ပိုင်ပြီး မမျှဝေရသေးတဲ့ history ကို rebase လုပ်ပါ",
+        },
+      }),
+      lesson({
+        id: "interactive-rebase",
+        title: "Clean commits interactively",
+        titleMy: "Commits ကို interactive နဲ့ရှင်းမယ်",
+        summary: "Interactive rebase can reorder, rename, combine, or edit a small set of local commits before review.",
+        summaryMy: "Interactive rebase က review မတင်ခင် local commits အနည်းငယ်ကို အစဉ်ပြောင်း၊ နာမည်ပြောင်း၊ ပေါင်း သို့ ပြင်နိုင်တယ်",
+        points: [
+          { title: "Pick", copy: "Keep a commit as it is." },
+          { title: "Reword", copy: "Improve only its message." },
+          { title: "Squash", copy: "Combine noisy commits into one." },
+        ],
+        pointsMy: [
+          { title: "Pick", copy: "Commit ကိုမပြောင်းဘဲထားပါ" },
+          { title: "Reword", copy: "Message ကိုပဲကောင်းအောင်ပြင်ပါ" },
+          { title: "Squash", copy: "Commit အသေးများကို တစ်ခုထဲပေါင်းပါ" },
+        ],
+        command: "git rebase -i HEAD~3",
+        commandLabel: "Edit the latest three local commits",
+        commandLabelMy: "နောက်ဆုံး local commits သုံးခုကိုပြင်ရန်",
+        tip: "Create a backup branch before rewriting important work.",
+        tipMy: "အရေးကြီးတဲ့အလုပ်ကို ပြန်မရေးခင် backup branch ဖန်တီးပါ",
+        challenge: "rebase-interactive",
+        check: {
+          question: "What does squash do?",
+          options: ["Combines commits", "Deletes the repository", "Pushes to GitHub"],
+          correct: 0,
+          success: "Correct. Squash folds one commit into another.",
+        },
+        checkMy: {
+          question: "Squash က ဘာလုပ်လဲ",
+          options: ["Commits ကိုပေါင်းတယ်", "Repository ဖျက်တယ်", "GitHub တင်တယ်"],
+          correct: 0,
+          success: "မှန်ပါတယ် Squash က commit တစ်ခုကို နောက်တစ်ခုထဲ ပေါင်းတယ်",
+        },
+      }),
+      lesson({
+        id: "rebase-conflict-recovery",
+        title: "Resolve or abort a rebase",
+        titleMy: "Rebase conflict ဖြေရှင်း သို့ ရပ်မယ်",
+        summary: "When rebase pauses, resolve each file, stage it, and continue. Abort if the result is unclear.",
+        summaryMy: "Rebase ရပ်သွားရင် file တစ်ခုချင်းဖြေရှင်း၊ stage လုပ်ပြီးဆက်ပါ Result မရှင်းရင် abort လုပ်ပါ",
+        points: [
+          { title: "Inspect", copy: "Use status to find the stopped commit." },
+          { title: "Resolve", copy: "Edit markers and stage the final file." },
+          { title: "Continue", copy: "Continue, skip, or abort intentionally." },
+        ],
+        pointsMy: [
+          { title: "စစ်မယ်", copy: "ရပ်နေတဲ့ commit ကို status နဲ့ရှာပါ" },
+          { title: "ဖြေရှင်း", copy: "Markers ပြင်ပြီး final file ကို stage လုပ်ပါ" },
+          { title: "ဆက်မယ်", copy: "သေချာစွာ continue၊ skip သို့ abort ရွေးပါ" },
+        ],
+        command: "git rebase --continue",
+        commandLabel: "Continue after staging resolved files",
+        commandLabelMy: "Conflict ဖြေရှင်းပြီး files stage လုပ်ကာဆက်ရန်",
+        tip: "git rebase --abort returns the branch to its pre-rebase state.",
+        tipMy: "git rebase --abort က branch ကို rebase မတိုင်ခင်အခြေအနေ ပြန်ပို့တယ်",
+        challenge: "rebase-continue",
+        check: {
+          question: "What should you do before rebase --continue?",
+          options: ["Resolve and stage conflicted files", "Force push immediately", "Delete .git"],
+          correct: 0,
+          success: "Correct. Stage the resolved result, then continue.",
+        },
+        checkMy: {
+          question: "rebase --continue မလုပ်ခင် ဘာလုပ်ရမလဲ",
+          options: ["Conflict files ဖြေရှင်းပြီး stage လုပ်", "ချက်ချင်း force push", ".git ဖျက်"],
+          correct: 0,
+          success: "မှန်ပါတယ် ဖြေရှင်းပြီး result ကို stage လုပ်ကာ ဆက်ပါ",
+        },
+      }),
+    ],
+  },
 ];
+
+const difficultyOrder = { Beginner: 0, Intermediate: 1, Advanced: 2 };
+
+export const modules = learningModules.sort(
+  (left, right) =>
+    (difficultyOrder[left.difficulty] ?? 99) - (difficultyOrder[right.difficulty] ?? 99) ||
+    Number(left.number) - Number(right.number),
+);
 
 export const knowledgeTopics = [
   {
@@ -1980,6 +2109,118 @@ export const knowledgeTopics = [
       question: "Issue နဲ့ project ဘာကွာလဲ",
       answer: "Issue က အလုပ် သို့ discussion တစ်ခုကိုရှင်းပြတယ် Project က issues နဲ့ pull requests အများကို team workflow ထဲ စီစဉ်တယ်",
       example: "Issue #42 က task တစ်ခုပါ Community project က #42 ကို team ရဲ့တခြားအလုပ်တွေနဲ့အတူပြတယ်",
+    },
+  },
+  {
+    id: "merge-vs-rebase",
+    category: "Merge & rebase",
+    question: "When should I merge, and when should I rebase?",
+    answer: "Merge is the safer default for shared branches because it preserves the existing history. Rebase is useful for updating and cleaning your own unpublished feature branch before review.",
+    example: "Merge a reviewed team branch into main. Rebase your private feat/profile branch onto origin/main before opening its pull request.",
+    my: {
+      category: "Merge နဲ့ rebase",
+      question: "ဘယ်အချိန် merge၊ ဘယ်အချိန် rebase လုပ်မလဲ",
+      answer: "Merge က ရှိပြီးသား history ကိုထိန်းထားလို့ shared branches အတွက် ပိုလုံခြုံတယ် Rebase က review မတင်ခင် မမျှဝေရသေးတဲ့ ကိုယ့် feature branch ကို update နဲ့ ရှင်းလင်းဖို့အသုံးဝင်တယ်",
+      example: "Review ပြီး team branch ကို main ထဲ merge လုပ်ပါ Private feat/profile branch ကို PR မတင်ခင် origin/main ပေါ် rebase လုပ်ပါ",
+    },
+  },
+  {
+    id: "merge-strategies",
+    category: "Merge & rebase",
+    question: "What are fast-forward, merge commit, and squash merge?",
+    answer: "Fast-forward moves the branch pointer when history has not diverged. A merge commit joins both histories explicitly. Squash merge combines a feature's changes into one new commit on the target branch.",
+    example: "Use a merge commit when branch context matters; use squash when the feature has many noisy work-in-progress commits.",
+    my: {
+      category: "Merge နဲ့ rebase",
+      question: "Fast-forward၊ merge commit နဲ့ squash merge ဆိုတာ ဘာလဲ",
+      answer: "History မခွဲသေးရင် fast-forward က branch pointer ကိုရှေ့ရွှေ့တယ် Merge commit က histories နှစ်ခုကို အတိအကျချိတ်တယ် Squash merge က feature changes ကို target branch ပေါ် commit အသစ်တစ်ခုအဖြစ်ပေါင်းတယ်",
+      example: "Branch context အရေးကြီးရင် merge commit သုံးပါ Work-in-progress commits များရင် squash သုံးပါ",
+    },
+  },
+  {
+    id: "safe-rebase-rule",
+    category: "Merge & rebase",
+    question: "Why should I avoid rebasing shared commits?",
+    answer: "Rebase creates replacement commits with new IDs. If teammates already built work on the old IDs, rewriting them makes histories disagree and forces everyone to repair their branches.",
+    example: "Rebase your local feature branch; do not rebase main or a teammate's published branch without an explicit team agreement.",
+    my: {
+      category: "Merge နဲ့ rebase",
+      question: "Shared commits ကို rebase မလုပ်သင့်တာ ဘာကြောင့်လဲ",
+      answer: "Rebase က ID အသစ်ပါတဲ့ replacement commits ဖန်တီးတယ် Teammate တွေက ID အဟောင်းပေါ် အလုပ်ဆက်ထားရင် histories မတူတော့ဘဲ branch များကိုပြန်ပြင်ရတယ်",
+      example: "ကိုယ့် local feature branch ကို rebase လုပ်ပါ Team သဘောတူညီမှုမရှိဘဲ main သို့ teammate published branch ကို မလုပ်ပါနဲ့",
+    },
+  },
+  {
+    id: "interactive-rebase-knowledge",
+    category: "Merge & rebase",
+    question: "What can interactive rebase change?",
+    answer: "Interactive rebase can reorder commits, reword messages, squash or fixup commits together, edit a commit, or drop an unwanted local commit.",
+    example: "git rebase -i HEAD~3 opens a plan for the latest three commits. Make a backup branch before rewriting important work.",
+    my: {
+      category: "Merge နဲ့ rebase",
+      question: "Interactive rebase က ဘာတွေပြောင်းနိုင်လဲ",
+      answer: "Interactive rebase က commit အစဉ်ပြောင်း၊ message ပြင်၊ squash သို့ fixup နဲ့ပေါင်း၊ commit ပြင် သို့ မလိုတဲ့ local commit ဖယ်နိုင်တယ်",
+      example: "git rebase -i HEAD~3 က နောက်ဆုံး commits သုံးခုအတွက် plan ဖွင့်တယ် အရေးကြီးတဲ့အလုပ်ဆို backup branch အရင်ဖန်တီးပါ",
+    },
+  },
+  {
+    id: "rebase-conflict-steps",
+    category: "Merge & rebase",
+    question: "How do I finish or cancel a conflicted rebase?",
+    answer: "Run git status, resolve the marked files, stage each resolved file, then run git rebase --continue. Use git rebase --abort to return to the state from before the rebase.",
+    example: "git status → edit the conflict → git add FILE → git rebase --continue",
+    my: {
+      category: "Merge နဲ့ rebase",
+      question: "Conflict ဖြစ်တဲ့ rebase ကို ဘယ်လိုပြီး သို့ ပယ်မလဲ",
+      answer: "git status ကြည့်၊ marked files ဖြေရှင်း၊ file တစ်ခုချင်း stage လုပ်ပြီး git rebase --continue လုပ်ပါ Rebase မတိုင်ခင်အခြေအနေပြန်လိုရင် git rebase --abort သုံးပါ",
+      example: "git status → conflict ပြင် → git add FILE → git rebase --continue",
+    },
+  },
+  {
+    id: "force-with-lease",
+    category: "Merge & rebase",
+    question: "Why use --force-with-lease after rebasing?",
+    answer: "A published rebased branch has new commit IDs, so a normal push is rejected. --force-with-lease updates it only when the remote branch still matches the version you last fetched, helping protect unseen teammate work.",
+    example: "git fetch origin, inspect the branch, then git push --force-with-lease. Never force-push a protected shared branch.",
+    my: {
+      category: "Merge နဲ့ rebase",
+      question: "Rebase ပြီး --force-with-lease ဘာကြောင့်သုံးလဲ",
+      answer: "Published branch ကို rebase လုပ်ရင် commit IDs အသစ်ဖြစ်လို့ normal push ငြင်းခံရတယ် --force-with-lease က remote branch ဟာ နောက်ဆုံး fetch လုပ်ထားတာနဲ့တူနေမှ update လုပ်လို့ teammate အလုပ်အသစ်ကို ကာကွယ်ပေးတယ်",
+      example: "git fetch origin လုပ်၊ branch စစ်ပြီး git push --force-with-lease လုပ်ပါ Protected shared branch ကို force push မလုပ်ပါနဲ့",
+    },
+  },
+  {
+    id: "git-on-windows-shell",
+    category: "Windows practice",
+    question: "How can I try Git in a Windows shell?",
+    answer: "Install Git for Windows, open Git Bash or PowerShell, verify git --version, then make a practice folder. Run git init, create a README, and inspect it with git status before your first add and commit.",
+    example: "mkdir learn-git; cd learn-git; git init; echo # My practice repo > README.md; git status",
+    links: [
+      { label: "Install Git for Windows", myLabel: "Git for Windows install လုပ်မယ်", url: "https://git-scm.com/download/win" },
+      { label: "Git and GitHub for Beginners — Crash Course", myLabel: "Git နဲ့ GitHub အစပြုသူ Crash Course", url: "https://www.youtube.com/watch?v=RGOj5yH7evk" },
+      { label: "Git Tutorial for Beginners — Learn Git in 1 Hour", myLabel: "အစပြုသူ Git ကို ၁ နာရီအတွင်း လေ့လာမယ်", url: "https://www.youtube.com/watch?v=8JJ101D3knE" },
+    ],
+    my: {
+      category: "Windows လက်တွေ့",
+      question: "Windows shell မှာ Git ကို ဘယ်လိုစမ်းမလဲ",
+      answer: "Git for Windows install လုပ်၊ Git Bash သို့ PowerShell ဖွင့်၊ git --version နဲ့စစ်ပြီး practice folder ဖန်တီးပါ git init လုပ်၊ README ဖန်တီးပြီး ပထမ add နဲ့ commit မလုပ်ခင် git status ကြည့်ပါ",
+      example: "mkdir learn-git; cd learn-git; git init; echo # My practice repo > README.md; git status",
+    },
+  },
+  {
+    id: "git-bash-vs-powershell",
+    category: "Windows practice",
+    question: "Should I use Git Bash, PowerShell, or Command Prompt?",
+    answer: "Git commands work in all three after Git is installed. Git Bash follows Unix-style examples commonly used in tutorials. PowerShell fits normal Windows automation. Pick one shell first and translate shell-only commands when needed.",
+    example: "git status is identical everywhere, but file commands such as touch, New-Item, and type nul > file.txt are shell-specific.",
+    links: [
+      { label: "Git and GitHub Tutorial for Beginners", myLabel: "Git နဲ့ GitHub အစပြုသူ Tutorial", url: "https://www.youtube.com/watch?v=tRZGeaHPoaw" },
+    ],
+    my: {
+      category: "Windows လက်တွေ့",
+      question: "Git Bash၊ PowerShell သို့ Command Prompt ဘယ်ဟာသုံးမလဲ",
+      answer: "Git install ပြီးရင် Git commands က သုံးခုလုံးမှာ အလုပ်လုပ်တယ် Git Bash က tutorials မှာသုံးလေ့ရှိတဲ့ Unix-style examples နဲ့ကိုက်တယ် PowerShell က Windows automation နဲ့ကိုက်တယ် Shell တစ်ခုကိုအရင်ရွေးပြီး shell-only commands ကိုလိုသလိုပြောင်းပါ",
+      example: "git status က နေရာတိုင်းတူတယ် ဒါပေမယ့် touch၊ New-Item နဲ့ type nul > file.txt က shell အလိုက်ကွာတယ်",
     },
   },
 ];
