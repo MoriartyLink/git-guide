@@ -2,10 +2,11 @@
 
 ## 1. Architectural style
 
-Git Together is a small client-server single-page application.
+learnGit is a small client-server single-page application.
 
 - The React client owns presentation, navigation, local progress, interaction state, and PDF output
-- The Express server owns guide delivery, simulated terminal behavior, and production static hosting
+- The Express server owns guide delivery, grounded AI requests, and production static hosting
+- The browser owns an in-memory Git simulator; the real-sandbox prototype is not exposed
 - Static JavaScript objects are the content store
 - Browser `localStorage` stores learner progress; Supabase Auth manages optional account sessions
 
@@ -18,9 +19,12 @@ flowchart LR
     Learner["Learner"] -->|Reads, answers, practices| Browser["React application"]
     Maintainer["Content maintainer"] -->|Edits bilingual content| Source["Git repository"]
     Source -->|Build and deploy| Server["Express + static assets"]
-    Browser -->|GET guide / POST command| Server
+    Browser -->|GET guide / POST chat| Server
     Browser -->|Language and progress| Storage["Browser localStorage"]
     Browser -->|Sign up, sign in, sign out| Supabase["Supabase Auth"]
+    Browser -->|Grounded questions| Server
+    Server -->|Selected guide excerpts| Groq["Groq API"]
+    Browser -->|Commands| Simulator["In-memory Git engine"]
     Browser -->|Generate PDF| Download["Certificate download"]
     Browser -->|Reference links| Docs["Git, GitHub, Talkware"]
 ```
@@ -34,12 +38,14 @@ flowchart TB
         State["React state"]
         Localize["English/Burmese localization"]
         GitMap["Git map renderer"]
+        GitEngine["Git scenario engine"]
         PDF["Canvas + lazy-loaded jsPDF"]
         LS["localStorage"]
         AuthClient["Supabase client"]
         UI <--> State
         UI --> Localize
         UI --> GitMap
+        UI <--> GitEngine
         UI --> PDF
         State <--> LS
         UI <--> AuthClient
@@ -50,15 +56,15 @@ flowchart TB
     subgraph API_Runtime["API runtime"]
         Express["Express middleware and routing"]
         GuideRoute["GET /api/guide"]
-        TerminalRoute["POST /api/terminal"]
+        ChatRoute["POST /api/chat"]
         Static["Static dist hosting"]
         Express --> GuideRoute
-        Express --> TerminalRoute
+        Express --> ChatRoute
         Express --> Static
     end
 
     GuideData["server/guide.js"] --> GuideRoute
-    TerminalData["server/content.js"] --> TerminalRoute
+    GuideData --> ChatRoute
     UI -->|fetch JSON| Express
     Vercel["api/*.js on Vercel"] --> Express
     Node["server/index.js on Node"] --> Express
@@ -73,17 +79,20 @@ flowchart LR
     App --> Asset["src/assets/git-together-logo.png"]
     App --> SupabaseClient["src/supabase.js"]
     SupabaseClient --> SupabaseJS["@supabase/supabase-js"]
+    App --> SimulatorUI["src/GuidedGitSimulator.jsx"]
+    SimulatorUI --> GitEngine["src/gitSimulator.js"]
+    App --> ChatUI["src/GuideChat.jsx"]
     App --> GuideFallback["server/guide.js"]
     App -. lazy import .-> JsPDF["jspdf"]
     Server["server/app.js"] --> Guide["server/guide.js"]
-    Server --> Responses["server/content.js"]
+    Server --> Chat["server/chat.js"]
     NodeEntry["server/index.js"] --> Server
-    VercelEntry["api/health.js, guide.js, terminal.js"] --> Server
+    VercelEntry["api/health.js, guide.js, chat.js"] --> Server
     Vite["vite.config.js"] --> Main
     Server --> Dist["dist/"]
 ```
 
-The supplied asset is presented as the Git Together brand mark in the header and footer.
+The supplied asset is presented as the learnGit brand mark in the header and footer.
 
 ## 5. Primary data flow
 
@@ -99,7 +108,8 @@ flowchart TD
     Views --> Action{"Learner action"}
     Action -->|Change language| SaveLanguage["Save language locally"]
     Action -->|Complete lesson| SaveProgress["Save lesson ID locally"]
-    Action -->|Run command| TerminalAPI["POST /api/terminal"]
+    Action -->|Run command| GitEngine["Update in-memory refs and commits"]
+    Action -->|Ask Git question| ChatAPI["POST /api/chat"]
     Action -->|Get certificate| PDF["Generate local PDF"]
     Action -->|Manage account| Auth["Supabase Auth"]
 ```
@@ -208,18 +218,24 @@ type KnowledgeTopic = {
 };
 ```
 
-### Terminal exchange
+### AI chat exchange
 
 ```ts
-type TerminalRequest = {
-  command: string;
+type ChatRequest = {
+  language: "en" | "my";
+  messages: Array<{
+    role: "user" | "assistant";
+    content: string;
+  }>;
 };
 
-type TerminalResponse = {
-  lines?: string[];
-  completed?: string;
-  clear?: boolean;
-  error?: string;
+type ChatResponse = {
+  answer: string;
+  sources: Array<{
+    id: string;
+    title: string;
+    type: "lesson" | "knowledge";
+  }>;
 };
 ```
 
@@ -238,7 +254,8 @@ type StoredProgress = string[];
 | Learner | Switch language | UI and content change to English or Burmese |
 | Learner | Study a lesson | Reads concise content and sees a Git-map visualization |
 | Learner | Answer a quick check | Gets immediate feedback with shuffled answer positions |
-| Learner | Practice a command | Receives deterministic simulated terminal output |
+| Learner | Practice a command | Updates a synchronized, in-browser terminal and commit map |
+| Learner | Ask a workflow question | Gets an answer grounded in selected learnGit excerpts |
 | Learner | Track progress | Completion persists on the current browser |
 | Learner | Download certificate | Gets a locally generated PDF after all lessons are complete |
 | Contributor | Improve content | Edits bilingual static content and opens a pull request |
@@ -254,7 +271,7 @@ sequenceDiagram
     participant API as Express API
     participant Guide as guide.js
 
-    Learner->>Browser: Open Git Together
+    Learner->>Browser: Open learnGit
     Browser->>Storage: Read language and progress
     Browser->>API: GET /api/guide
     API->>Guide: Read modules and topics
@@ -273,25 +290,18 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor Learner
-    participant UI as Terminal UI
-    participant API as POST /api/terminal
-    participant Matcher as Command matcher
+    participant UI as Guided terminal
+    participant Engine as In-memory Git engine
+    participant Map as Commit map
 
-    Learner->>UI: Enter command
-    UI->>API: { command }
-    API->>Matcher: Normalize whitespace and match
-    alt Recognized command
-        Matcher-->>API: Simulated lines and optional challenge ID
-        API-->>UI: 200 response
-        UI-->>Learner: Show output and update challenge progress
-    else Unsupported command
-        Matcher-->>API: Helpful unsupported result
-        API-->>UI: 422 response
-        UI-->>Learner: Show safe error output
-    end
+    Learner->>UI: Type command
+    UI->>Engine: Execute supported command against current state
+    Engine-->>UI: New state and terminal lines
+    UI->>Map: Render commits, parents, refs, tags, and remotes
+    UI-->>Learner: Show synchronized terminal and graph
 ```
 
-No operating-system process is created in this sequence.
+No command is executed by the operating system or API runtime.
 
 ## 10. Sequence: lesson completion and certificate
 
@@ -344,12 +354,13 @@ flowchart LR
     Dist --> Host{"Deployment target"}
     Host -->|Node| Express["Express static hosting"]
     Host -->|Vercel| CDN["Vercel static hosting"]
-    Guide["Guide and terminal content"] --> API["Shared Express API"]
+    Guide["Guide content"] --> API["Shared Express API"]
     API --> Express
     API --> Functions["Vercel Functions"]
     Express --> Browser["Learner browser"]
     CDN --> Browser
     Functions --> Browser
+    Prototype["sandbox/ (future prototype)"] -. not deployed .-> Browser
 ```
 
 ## 13. Architectural decisions
@@ -366,29 +377,34 @@ Tradeoff:
 
 - Editors must change source code and redeploy
 
-### Local progress instead of accounts
+### Local progress alongside optional accounts
 
 Benefits:
 
-- No signup barrier
+- No signup barrier for reading lessons
 - Minimal privacy risk
-- No identity or session infrastructure
+- Learning progress remains independent from identity data
 
 Tradeoff:
 
-- Progress does not follow a learner to another browser or device
+- Progress does not follow a learner to another browser or device, even after sign-in
 
-### Simulated terminal instead of shell execution
+### In-browser Git model
 
 Benefits:
 
-- Safe for public anonymous use
-- Deterministic beginner-friendly output
-- No sandbox infrastructure required
+- Instant interaction with no service dependency
+- Terminal output and commit map stay synchronized
+- Commands cannot reach the learner device or application host
 
 Tradeoff:
 
-- It cannot reproduce every real Git state or command
+- The model supports educational workflows rather than every behavior of the Git executable
+
+### Guide-grounded AI instead of open-ended chat
+
+The server selects relevant documents from `server/guide.js` and provides only those excerpts to
+Groq. Authentication, payload limits, and server-only credentials reduce abuse and secret exposure.
 
 ### Client-side certificate generation
 
@@ -402,11 +418,11 @@ Tradeoff:
 
 - Certificate issuance is based on browser-local progress and is not independently verifiable
 
-### Single React application file
+### Focused interactive components
 
-The current component set is colocated in `src/App.jsx`, which makes this small guide easy to
-navigate. If feature ownership or testing becomes difficult, split views, shared UI, and certificate
-logic into separate modules without changing their external behavior.
+The primary views remain in `src/App.jsx`, while the terminal and AI helper are separate components
+because they own independent connection lifecycles. Additional views can be extracted when feature
+ownership or testing benefits from a smaller boundary.
 
 ## 14. Extension points
 
@@ -415,7 +431,7 @@ Future changes can add:
 - Automated content-schema validation
 - Component and API tests
 - A service worker for full offline use
-- More simulated commands
+- More guided terminal exercises
 - Verified certificates through an optional backend
 
 Any extension should preserve the public no-login learning path unless the product scope explicitly

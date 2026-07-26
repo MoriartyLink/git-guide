@@ -1,6 +1,8 @@
 import compression from "compression";
 import express from "express";
 import helmet from "helmet";
+import { verifySupabaseAccessToken } from "./auth.js";
+import { answerGuideQuestion, normalizeChatMessages } from "./chat.js";
 import { commandResponses } from "./content.js";
 import { knowledgeTopics, modules } from "./guide.js";
 
@@ -11,17 +13,60 @@ app.use(compression());
 app.use(express.json({ limit: "32kb" }));
 
 app.get("/api/health", (_request, response) => {
-  response.json({ ok: true, service: "git-together-api" });
+  response.json({ ok: true, service: "learn-git-api" });
 });
 
 app.get("/api/guide", (_request, response) => {
   response.set("Cache-Control", "public, max-age=300");
   response.json({
-    name: "Git Together",
+    name: "learnGit",
     description: "A practical Git and GitHub guide for community builders.",
     modules,
     knowledgeTopics,
   });
+});
+
+app.post("/api/chat", async (request, response) => {
+  try {
+    await verifySupabaseAccessToken(request);
+  } catch {
+    return response.status(401).json({ error: "Sign in to use the learnGit assistant." });
+  }
+
+  const messages = normalizeChatMessages(request.body?.messages);
+  if (!messages.length || messages.at(-1).role !== "user") {
+    return response.status(400).json({ error: "Ask a Git workflow question first." });
+  }
+
+  try {
+    const result = await answerGuideQuestion(
+      messages,
+      request.body?.language === "my" ? "my" : "en",
+    );
+    response.set("Cache-Control", "no-store");
+    return response.json(result);
+  } catch (error) {
+    const status = Number(error?.status) || (error?.name === "AbortError" ? 504 : 500);
+    const providerMessages = {
+      400: "Groq rejected the configured model or request. Set GROQ_MODEL=openai/gpt-oss-20b and redeploy.",
+      401: "Groq rejected the API key loaded by this server. Restart the local API, or update GROQ_API_KEY in the deployment environment and redeploy.",
+      403: "The configured Groq project does not allow this model. Enable it or use openai/gpt-oss-20b.",
+      404: "The configured Groq model was not found. Set GROQ_MODEL=openai/gpt-oss-20b and redeploy.",
+      422: "Groq could not process this request. Check the configured model and try again.",
+      429: "The Groq rate limit has been reached. Wait briefly, then try again.",
+      498: "Groq is currently at capacity. Wait briefly, then try again.",
+    };
+    const providerMessage = providerMessages[error?.providerStatus];
+    return response.status(status).json({
+      error:
+        status === 503
+          ? "The AI helper is not configured yet."
+          : providerMessage ||
+            (error?.providerNetworkError
+              ? "The learnGit server could not reach Groq. Check outbound network access and try again."
+              : "The AI helper is temporarily unavailable. Please try again."),
+    });
+  }
 });
 
 app.post("/api/terminal", (request, response) => {
@@ -322,8 +367,8 @@ app.post("/api/terminal", (request, response) => {
   if (command.startsWith("git remote")) {
     return response.json({
       lines: [
-        "origin  https://github.com/community/git-together.git (fetch)",
-        "origin  https://github.com/community/git-together.git (push)",
+        "origin  https://github.com/community/learn-git.git (fetch)",
+        "origin  https://github.com/community/learn-git.git (push)",
       ],
       completed: "remote",
     });

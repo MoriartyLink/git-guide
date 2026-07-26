@@ -28,17 +28,24 @@ import {
 import {
   createContext,
   createElement,
+  forwardRef,
+  lazy,
+  Suspense,
   useCallback,
   useContext,
   useEffect,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from "react";
 import gitTogetherLogo from "./assets/git-together-logo.png";
+import GuidedGitSimulator from "./GuidedGitSimulator";
+import GuideChat from "./GuideChat";
 import { isSupabaseConfigured, supabase } from "./supabase";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
+const SandboxTerminal = lazy(() => import("./SandboxTerminal"));
 
 const LanguageContext = createContext(null);
 
@@ -86,7 +93,7 @@ function Logo({ compact = false, onClick }) {
   return (
     <button
       className="brand"
-      aria-label="Git Together home"
+      aria-label="learnGit home"
       data-compact={compact}
       onClick={onClick}
     >
@@ -95,7 +102,7 @@ function Logo({ compact = false, onClick }) {
       </span>
       {!compact && (
         <span>
-          <strong>Git Together</strong>
+          <strong>learnGit</strong>
         </span>
       )}
     </button>
@@ -383,7 +390,7 @@ function AuthModal({ open, onClose }) {
         </h2>
         <p>
           {mode === "login"
-            ? t("Sign in to your Git Together account.", "Git Together အကောင့်ထဲ ဝင်ပါ")
+            ? t("Sign in to your learnGit account.", "learnGit အကောင့်ထဲ ဝင်ပါ")
             : t("Create an account with your email and password.", "Email နဲ့ password သုံးပြီး အကောင့်ဖန်တီးပါ")}
         </p>
 
@@ -522,7 +529,7 @@ async function downloadCertificate(name, language) {
   context.textAlign = "center";
   context.fillStyle = "#30d158";
   context.font = `700 24px ${fontFamily}`;
-  context.fillText("GIT TOGETHER · TALKWARE", 842, 160);
+  context.fillText("learnGit · TALKWARE", 842, 160);
 
   context.fillStyle = "#f5f5f7";
   context.font = `700 ${isBurmese ? 58 : 72}px ${fontFamily}`;
@@ -553,8 +560,8 @@ async function downloadCertificate(name, language) {
   context.font = `400 ${isBurmese ? 26 : 28}px ${fontFamily}`;
   context.fillText(
     isBurmese
-      ? "Git Together ရှိ Git နှင့် GitHub သင်ခန်းစာများအားလုံးကို ပြီးမြောက်သည့်အတွက်"
-      : "for completing all Git and GitHub lessons in the Git Together guide",
+      ? "learnGit ရှိ Git နှင့် GitHub သင်ခန်းစာများအားလုံးကို ပြီးမြောက်သည့်အတွက်"
+      : "for completing all Git and GitHub lessons in the learnGit guide",
     842,
     705,
   );
@@ -582,7 +589,7 @@ async function downloadCertificate(name, language) {
   const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, 297, 210);
   const safeName = name.replace(/[^\p{L}\p{N}-]+/gu, "-").replace(/^-|-$/g, "") || "learner";
-  pdf.save(`git-together-certificate-${safeName}.pdf`);
+  pdf.save(`learn-git-certificate-${safeName}.pdf`);
 }
 
 function CompletionCertificateCard({ completed, lessonCount }) {
@@ -1539,67 +1546,17 @@ function LessonView({
   );
 }
 
-function TerminalLab({ completedChallenges, setCompletedChallenges, initialCommand }) {
+function TerminalLab({
+  completedChallenges,
+  setCompletedChallenges,
+  initialCommand,
+  onOpenAuth,
+  session,
+}) {
   const { t } = useLanguage();
-  const [history, setHistory] = useState([
-    {
-      kind: "system",
-      lines: [
-        "Welcome to the Git Together terminal lab.",
-        "This is a safe simulation—nothing here changes your computer.",
-        "Type help to see available commands.",
-      ],
-    },
-  ]);
-  const [command, setCommand] = useState(initialCommand || "");
-  const [busy, setBusy] = useState(false);
-  const outputRef = useRef(null);
-
-  useEffect(() => {
-    setCommand(initialCommand || "");
-  }, [initialCommand]);
-
-  useEffect(() => {
-    outputRef.current?.scrollTo({ top: outputRef.current.scrollHeight, behavior: "smooth" });
-  }, [history]);
-
-  const runCommand = async (event) => {
-    event?.preventDefault();
-    const currentCommand = command.trim();
-    if (!currentCommand || busy) return;
-
-    setHistory((items) => [...items, { kind: "command", command: currentCommand }]);
-    setCommand("");
-    setBusy(true);
-    try {
-      const result = await fetch(`${API_BASE}/api/terminal`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ command: currentCommand }),
-      });
-      const data = await result.json();
-      if (data.clear) {
-        setHistory([]);
-      } else {
-        setHistory((items) => [
-          ...items,
-          { kind: result.ok ? "output" : "error", lines: data.lines || [data.error] },
-        ]);
-      }
-      if (data.completed) {
-        setCompletedChallenges((items) =>
-          items.includes(data.completed) ? items : [...items, data.completed],
-        );
-      }
-    } catch {
-      setHistory((items) => [
-        ...items,
-        { kind: "error", lines: ["The lab backend is unavailable. Please try again."] },
-      ]);
-    } finally {
-      setBusy(false);
-    }
-  };
+  const terminalRef = useRef(null);
+  const [terminalMode, setTerminalMode] = useState("simulated");
+  const [connectionStatus, setConnectionStatus] = useState("disconnected");
 
   const challenges = [
     ["init", t("Start a repository", "Repository စမယ်"), "git init"],
@@ -1610,6 +1567,12 @@ function TerminalLab({ completedChallenges, setCompletedChallenges, initialComma
     ["push", t("Publish the branch", "Branch ကိုတင်မယ်"), "git push -u origin feat/community-guide"],
   ];
 
+  const selectTerminalMode = (mode) => {
+    terminalRef.current = null;
+    setConnectionStatus(mode === "simulated" ? "connected" : "disconnected");
+    setTerminalMode(mode);
+  };
+
   return (
     <main className="lab-page">
       <div className="container">
@@ -1618,12 +1581,63 @@ function TerminalLab({ completedChallenges, setCompletedChallenges, initialComma
           <h1>{t("Try Git safely.", "Git ကို လုံခြုံစွာ စမ်းပါ")}</h1>
           <p>
             {t(
-              "Click a task, then press Run. Commands use the backend but never change your computer.",
-              "Task တစ်ခုကိုနှိပ်ပြီး Run လုပ်ပါ Command တွေက backend ကိုသုံးပေမယ့် သင့် computer ကို မပြောင်းပါ",
+              "Type Git commands and watch commits, branches, merges, rebases, and remotes move on a live virtual map.",
+              "Git commands ရိုက်ပြီး commits branches merges rebases နဲ့ remotes များ live virtual map ပေါ်မှာ ပြောင်းလဲတာ ကြည့်ပါ",
             )}
           </p>
         </div>
-        <div className="lab-grid">
+        <div className="terminal-mode-picker" role="group" aria-label={t("Terminal mode", "Terminal အမျိုးအစား")}>
+          <button
+            className={terminalMode === "simulated" ? "active" : ""}
+            onClick={() => selectTerminalMode("simulated")}
+            aria-pressed={terminalMode === "simulated"}
+          >
+            <span><TerminalSquare size={18} /></span>
+            <div>
+              <strong>{t("Guided terminal", "Guided terminal")}</strong>
+              <small>
+                {t(
+                  "Instant, beginner-safe command responses. No sign-in needed.",
+                  "ချက်ချင်းသုံးနိုင်ပြီး beginner အတွက်လုံခြုံသည် အကောင့်ဝင်ရန်မလိုပါ",
+                )}
+              </small>
+            </div>
+            <i />
+          </button>
+          <button
+            className="coming-soon"
+            disabled
+            aria-disabled="true"
+          >
+            <span><LockKeyhole size={18} /></span>
+            <div>
+              <strong>
+                {t("Real sandbox", "Sandbox အစစ်")}
+                <em>{t("Coming soon", "မကြာမီ")}</em>
+              </strong>
+              <small>
+                {t(
+                  "The isolated Linux shell is being prepared for a future release.",
+                  "သီးသန့် Linux shell ကို နောက် release အတွက် ပြင်ဆင်နေသည်",
+                )}
+              </small>
+            </div>
+            <i />
+          </button>
+        </div>
+        {terminalMode === "simulated" ? (
+          <GuidedGitSimulator
+            completedScenarios={completedChallenges}
+            initialCommand={initialCommand}
+            onCompleted={(id) =>
+              setCompletedChallenges((items) =>
+                items.includes(id) ? items : [...items, id],
+              )
+            }
+            t={t}
+          />
+        ) : (
+          <div className="lab-grid">
           <aside className="challenge-panel">
             <div className="challenge-heading">
               <span>
@@ -1641,7 +1655,17 @@ function TerminalLab({ completedChallenges, setCompletedChallenges, initialComma
               {challenges.map(([id, title, suggestion], index) => {
                 const done = completedChallenges.includes(id);
                 return (
-                  <button key={id} className={done ? "done" : ""} onClick={() => setCommand(suggestion)}>
+                  <button
+                    key={id}
+                    className={done ? "done" : ""}
+                    disabled={connectionStatus !== "connected"}
+                    onClick={() => {
+                      terminalRef.current?.run(suggestion);
+                      setCompletedChallenges((items) =>
+                        items.includes(id) ? items : [...items, id],
+                      );
+                    }}
+                  >
                     <span>{done ? <Check size={14} /> : index + 1}</span>
                     <div>
                       <strong>{title}</strong>
@@ -1653,10 +1677,22 @@ function TerminalLab({ completedChallenges, setCompletedChallenges, initialComma
               })}
             </div>
             <div className="safe-note">
-              <Zap size={15} />
+              {terminalMode === "sandbox" ? <Zap size={15} /> : <GraduationCap size={15} />}
               <span>
-                <strong>{t("Safe practice", "လုံခြုံသည်")}</strong>
-                {t("Commands are simulated.", "Command များကို simulation လုပ်ထားသည်")}
+                <strong>
+                  {terminalMode === "sandbox"
+                    ? t("Container isolated", "Container သီးသန့်")
+                    : t("Guided and simulated", "Guided simulation")}
+                </strong>
+                {terminalMode === "sandbox"
+                  ? t(
+                    "Commands are real, but cannot touch your device.",
+                    "Command များက အစစ်ဖြစ်ပေမယ့် သင့် device ကို မထိနိုင်ပါ",
+                  )
+                  : t(
+                    "Responses are examples and no shell command is executed.",
+                    "အဖြေများက ဥပမာဖြစ်ပြီး shell command အစစ် run မည်မဟုတ်ပါ",
+                  )}
               </span>
             </div>
           </aside>
@@ -1668,48 +1704,192 @@ function TerminalLab({ completedChallenges, setCompletedChallenges, initialComma
                 <i />
                 <i />
               </span>
-              <span>git-together-lab — guided</span>
-              <button onClick={() => setHistory([])} aria-label="Clear terminal">
+              <span className="terminal-window-name">
+                {terminalMode === "sandbox" ? "learn-git-sandbox" : "learn-git-guided"}
+                <i className={`terminal-status-dot ${connectionStatus}`} />
+              </span>
+              <button onClick={() => terminalRef.current?.clear()} aria-label="Clear terminal">
                 <RotateCcw size={14} />
               </button>
             </div>
-            <div className="lab-output" ref={outputRef}>
-              {history.map((item, index) => {
-                if (item.kind === "command") {
-                  return (
-                    <p className="lab-command" key={index}>
-                      <span>➜</span> <em>community-project</em>{" "}
-                      <b>git:(feat/community-guide)</b> {item.command}
-                    </p>
-                  );
+            {terminalMode === "simulated" ? (
+              <SimulatedTerminal
+                ref={terminalRef}
+                initialCommand={initialCommand}
+                onStatusChange={setConnectionStatus}
+                onCompleted={(id) =>
+                  setCompletedChallenges((items) =>
+                    items.includes(id) ? items : [...items, id],
+                  )
                 }
-                return (
-                  <div className={`lab-lines ${item.kind}`} key={index}>
-                    {item.lines?.map((line, lineIndex) => <p key={lineIndex}>{line}</p>)}
-                  </div>
-                );
-              })}
-              {busy && <p className="terminal-muted">Running command…</p>}
-            </div>
-            <form className="terminal-input-row" onSubmit={runCommand}>
-              <span>➜</span>
-              <span className="input-path">community-project</span>
-              <input
-                autoFocus
-                value={command}
-                onChange={(event) => setCommand(event.target.value)}
-                placeholder={t("Type a Git command…", "Git command ရိုက်ပါ…")}
-                aria-label="Terminal command"
-                spellCheck="false"
+                t={t}
               />
-              <button disabled={busy || !command.trim()}>{t("Run", "စမ်းမယ်")} ↵</button>
-            </form>
+            ) : (
+              <Suspense
+                fallback={
+                  <div className="terminal-gate">
+                    <LoaderCircle className="spinning" size={22} />
+                    <strong>{t("Loading terminal…", "Terminal ဖွင့်နေသည်…")}</strong>
+                  </div>
+                }
+              >
+                <SandboxTerminal
+                  ref={terminalRef}
+                  initialCommand={initialCommand}
+                  onOpenAuth={onOpenAuth}
+                  onStatusChange={setConnectionStatus}
+                  session={session}
+                  t={t}
+                />
+              </Suspense>
+            )}
           </section>
-        </div>
+          </div>
+        )}
       </div>
     </main>
   );
 }
+
+const SimulatedTerminal = forwardRef(function SimulatedTerminal(
+  { initialCommand, onCompleted, onStatusChange, t },
+  ref,
+) {
+  const [busy, setBusy] = useState(false);
+  const [input, setInput] = useState("");
+  const [history, setHistory] = useState([
+    {
+      type: "system",
+      lines: [
+        t(
+          "Guided terminal ready. Try git status or type help.",
+          "Guided terminal အသင့်ဖြစ်ပါပြီ git status စမ်းပါ သို့မဟုတ် help ရိုက်ပါ",
+        ),
+      ],
+    },
+  ]);
+  const lastInitialCommand = useRef("");
+  const inputRef = useRef(null);
+  const outputRef = useRef(null);
+
+  useEffect(() => {
+    onStatusChange("connected");
+    return () => onStatusChange("disconnected");
+  }, [onStatusChange]);
+
+  useEffect(() => {
+    outputRef.current?.scrollTo({
+      top: outputRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [history, busy]);
+
+  const runCommand = useCallback(async (rawCommand) => {
+    const command = String(rawCommand || "").trim();
+    if (!command || busy) return;
+
+    setInput("");
+    setBusy(true);
+    setHistory((items) => [...items, { type: "command", command }]);
+
+    try {
+      const response = await fetch(`${API_BASE}/api/terminal`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ command }),
+      });
+      const payload = await response.json();
+
+      if (payload.clear) {
+        setHistory([]);
+      } else {
+        const lines = Array.isArray(payload.lines)
+          ? payload.lines
+          : [payload.error || t("No guided response is available.", "Guided response မရှိသေးပါ")];
+        setHistory((items) => [
+          ...items,
+          { type: response.ok ? "output" : "error", lines },
+        ]);
+      }
+      if (payload.completed) onCompleted?.(payload.completed);
+    } catch {
+      setHistory((items) => [
+        ...items,
+        {
+          type: "error",
+          lines: [
+            t(
+              "The guided terminal API is unavailable. Try again.",
+              "Guided terminal API ကို အသုံးမပြုနိုင်သေးပါ ထပ်စမ်းပါ",
+            ),
+          ],
+        },
+      ]);
+    } finally {
+      setBusy(false);
+      window.setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [busy, onCompleted, t]);
+
+  useEffect(() => {
+    if (!initialCommand || lastInitialCommand.current === initialCommand) return;
+    lastInitialCommand.current = initialCommand;
+    runCommand(initialCommand);
+  }, [initialCommand, runCommand]);
+
+  useImperativeHandle(ref, () => ({
+    clear() {
+      setHistory([]);
+      inputRef.current?.focus();
+    },
+    run(command) {
+      runCommand(command);
+    },
+  }), [runCommand]);
+
+  return (
+    <div className="simulated-terminal">
+      <div className="lab-output" ref={outputRef} aria-live="polite">
+        {history.map((entry, index) =>
+          entry.type === "command" ? (
+            <p className="lab-command" key={`${entry.command}-${index}`}>
+              <span>student@learnGit</span>
+              <span className="input-path"> ~/guide</span>
+              <span> $ {entry.command}</span>
+            </p>
+          ) : (
+            <div className={`lab-lines ${entry.type}`} key={`${entry.type}-${index}`}>
+              {entry.lines.map((line, lineIndex) => (
+                <p key={`${line}-${lineIndex}`}>{line || "\u00a0"}</p>
+              ))}
+            </div>
+          ),
+        )}
+        {busy && <p className="terminal-muted">{t("Running guided example…", "Guided example run နေသည်…")}</p>}
+      </div>
+      <form
+        className="terminal-input-row"
+        onSubmit={(event) => {
+          event.preventDefault();
+          runCommand(input);
+        }}
+      >
+        <span>student@learnGit</span>
+        <span className="input-path">~/guide $</span>
+        <input
+          ref={inputRef}
+          autoComplete="off"
+          disabled={busy}
+          onChange={(event) => setInput(event.target.value)}
+          placeholder={t("Type a guided command…", "Guided command ရိုက်ပါ…")}
+          spellCheck="false"
+          value={input}
+        />
+        <button disabled={busy || !input.trim()}>{t("Run", "Run")}</button>
+      </form>
+    </div>
+  );
+});
 
 function CheatSheet({ onTry }) {
   const { t } = useLanguage();
@@ -2026,7 +2206,7 @@ export default function App() {
       .catch(() => {
         import("../server/guide.js").then((content) =>
           setGuide({
-            name: "Git Together",
+            name: "learnGit",
             modules: content.modules,
             knowledgeTopics: content.knowledgeTopics,
           }),
@@ -2157,11 +2337,20 @@ export default function App() {
           completedChallenges={completedChallenges}
           setCompletedChallenges={setCompletedChallenges}
           initialCommand={initialCommand}
+          onOpenAuth={() => setAuthOpen(true)}
+          session={session}
         />
       )}
       {view === "knowledge" && <KnowledgePage topics={guide.knowledgeTopics || []} />}
       {view === "cheatsheet" && <CheatSheet onTry={openTerminal} />}
       {view !== "lesson" && <Footer />}
+      <GuideChat
+        apiBase={API_BASE}
+        language={language}
+        onOpenAuth={() => setAuthOpen(true)}
+        session={session}
+        t={languageValue.t}
+      />
     </div>
     </LanguageContext.Provider>
   );

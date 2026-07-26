@@ -1,27 +1,36 @@
 {
-  "name": "git-together-guide",
+  "name": "learn-git-guide",
   "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently -n web,api -c green,cyan \"vite\" \"node --watch server/index.js\"",
+    "dev:sandbox": "wrangler dev --config sandbox/wrangler.jsonc",
     "build": "vite build",
+    "build:sandbox": "wrangler deploy --config sandbox/wrangler.jsonc --dry-run",
     "start": "node server/index.js",
     "preview": "vite preview",
-    "check": "eslint ."
+    "check": "eslint .",
+    "check:sandbox": "tsc --project sandbox/tsconfig.json && wrangler types sandbox/worker-configuration.d.ts --config sandbox/wrangler.jsonc --check"
   },
   "dependencies": {
+    "@cloudflare/sandbox": "0.12.4",
     "@supabase/supabase-js": "2.109.0",
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/xterm": "6.0.0",
     "compression": "^1.7.5",
     "express": "^5.1.0",
     "helmet": "^8.1.0",
+    "jose": "6.2.4",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.468.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "5.20260726.1",
     "@eslint/js": "^9.17.0",
+    "@types/node": "26.1.1",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
@@ -30,6 +39,8 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
-    "vite": "^6.0.5"
+    "typescript": "7.0.2",
+    "vite": "^6.0.5",
+    "wrangler": "4.114.0"
   }
 }

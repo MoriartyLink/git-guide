@@ -1,7 +1,15 @@
 import express from "express";
 import path from "node:path";
+import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
-import app from "./app.js";
+
+try {
+  loadEnvFile();
+} catch (error) {
+  if (error?.code !== "ENOENT") throw error;
+}
+
+const { default: app } = await import("./app.js");
 
 const port = Number(process.env.PORT) || 8787;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -13,5 +21,5 @@ app.get(/.*/, (_request, response) => {
 });
 
 app.listen(port, () => {
-  console.log(`Git Together is running on http://localhost:${port}`);
+  console.log(`learnGit is running on http://localhost:${port}`);
 });

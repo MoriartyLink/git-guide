@@ -2,9 +2,9 @@
 
 ## 1. Purpose
 
-Git Together teaches beginner contributors how to use Git and GitHub. The application is public,
-bilingual, and account-free. It provides educational simulations, not a real shell or Git hosting
-service.
+learnGit teaches beginner contributors how to use Git and GitHub. The learning guide is public and
+bilingual. The guided terminal is available in the browser, while optional Supabase accounts
+unlock the guide-grounded AI helper. Lesson progress remains browser-local.
 
 ## 2. System boundaries
 
@@ -13,31 +13,41 @@ The system includes:
 - A React single-page application
 - Static bilingual learning content
 - An Express JSON API
-- A deterministic terminal simulator
+- Supabase email/password authentication
+- A Groq-powered assistant grounded in the committed guide content
+- A client-side Git state engine with synchronized map and terminal views
+- A disabled, clearly labelled future real-sandbox prototype
 - Browser-local progress and language preferences
 - Browser-side PDF certificate generation
 
 The system does not include:
 
-- Authentication or user accounts
 - A database
 - Server-side learner progress
 - Analytics or behavioral tracking
-- Real shell execution
 - GitHub OAuth or GitHub API mutations
+- Shell execution in the Express/Vercel application process
+- Open-ended AI answers based on material outside the website
 
 ## 3. Runtime components
 
 | Component | File | Responsibility |
 | --- | --- | --- |
 | React entry | `src/main.jsx` | Mount the application |
-| Application UI | `src/App.jsx` | Navigation, views, local state, quizzes, terminal client, and certificates |
+| Application UI | `src/App.jsx` | Navigation, views, local state, quizzes, authentication, and certificates |
+| Guided terminal | `src/GuidedGitSimulator.jsx` | Scenario browser, commit map, terminal history, and learner controls |
+| Git simulator engine | `src/gitSimulator.js` | In-memory refs, commits, commands, remote state, and goal predicates |
+| Future terminal client | `src/SandboxTerminal.jsx` | Prototype xterm/WebSocket integration; not exposed in the current UI |
+| AI helper | `src/GuideChat.jsx` | Floating authenticated chat interface and source labels |
 | Design system | `src/styles.css` | Responsive black/green Apple HIG-inspired presentation |
 | Learning model | `server/guide.js` | Authoritative modules, lessons, translations, and knowledge topics |
-| Terminal fixtures | `server/content.js` | Reusable simulated command responses |
-| API application | `server/app.js` | API routes, command matching, compression, and security headers |
+| Chat retrieval | `server/chat.js` | Select relevant guide excerpts and request a Groq completion |
+| API authentication | `server/auth.js` | Verify Supabase access tokens against project JWKS |
+| API application | `server/app.js` | Guide and chat routes, compression, and security headers |
 | Node server | `server/index.js` | Local/Node listener and production static hosting |
 | Vercel adapters | `api/*.js` | Expose the shared API app as Vercel Functions |
+| Future Sandbox Worker | `sandbox/worker.ts` | Prototype for a later isolated real terminal |
+| Future Sandbox image | `sandbox/Dockerfile` | Prototype container image |
 | Build configuration | `vite.config.js` | React plugin, development port, and API proxy |
 | Vercel configuration | `vercel.json` | Vite build output and SPA rewrite |
 
@@ -47,9 +57,9 @@ The system does not include:
 
 1. Vite serves the React application on port `5173`
 2. Node watches and runs Express on port `8787`
-3. Vite proxies requests under `/api` to Express
 
-The browser therefore uses same-origin URLs during local development.
+Vite proxies requests under `/api` to Express, so those requests are same-origin in development.
+The guided terminal needs no additional service.
 
 ## 5. Production runtime
 
@@ -75,11 +85,15 @@ Vercel builds the same Vite client and maps each file in `api/` to an endpoint:
 | --- | --- |
 | `api/health.js` | `/api/health` |
 | `api/guide.js` | `/api/guide` |
+| `api/chat.js` | `/api/chat` |
 | `api/terminal.js` | `/api/terminal` |
 
 Each function exports the shared Express application from `server/app.js`. The application does not
 call `listen()` inside Vercel. Static files come from `dist/`, and the SPA rewrite in `vercel.json`
 returns `index.html` for non-file client requests.
+
+The current guided terminal runs in the client and does not call `/api/terminal`. The route remains
+for compatibility with the earlier deterministic terminal.
 
 ## 6. HTTP API
 
@@ -90,7 +104,7 @@ Response:
 ```json
 {
   "ok": true,
-  "service": "git-together-api"
+  "service": "learn-git-api"
 }
 ```
 
@@ -108,20 +122,26 @@ Top-level response:
 
 ```json
 {
-  "name": "Git Together",
+  "name": "learnGit",
   "description": "A practical Git and GitHub guide for community builders.",
   "modules": [],
   "knowledgeTopics": []
 }
 ```
 
-### `POST /api/terminal`
+### `POST /api/chat`
 
 Request:
 
 ```json
 {
-  "command": "git status"
+  "language": "en",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What should I do before opening a pull request?"
+    }
+  ]
 }
 ```
 
@@ -129,31 +149,33 @@ Successful response:
 
 ```json
 {
-  "lines": [
-    "On branch main",
-    "Changes not staged for commit:"
-  ],
-  "completed": "status"
+  "answer": "Review your changes, run the project checks, then push your branch.",
+  "sources": [
+    {
+      "id": "lesson:open-pull-request",
+      "title": "Open a pull request",
+      "type": "lesson"
+    }
+  ]
 }
 ```
 
-Possible fields:
+The route requires a valid Supabase bearer token, keeps only the eight most recent turns, limits
+each message to 1,200 characters, retrieves relevant excerpts from `server/guide.js`, and sends
+those excerpts to Groq with a strict guide-only system instruction. Provider credentials remain on
+the server.
 
-| Field | Type | Meaning |
+### Future Sandbox Worker API
+
+| Method | Route | Purpose |
 | --- | --- | --- |
-| `lines` | `string[]` | Simulated terminal output |
-| `completed` | `string` | Optional terminal challenge identifier |
-| `clear` | `boolean` | Tells the client to clear terminal history |
-| `error` | `string` | Validation error |
+| `GET` | `/health` | Worker health |
+| `POST` | `/api/terminal/session` | Verify a Supabase token, prepare a user sandbox, and return a two-minute ticket |
+| `DELETE` | `/api/terminal/session` | Destroy the signed-in user's sandbox |
+| `GET` upgrade | `/ws/terminal?ticket=…` | Attach a browser WebSocket to the sandbox PTY |
 
-Status codes:
-
-- `200` for recognized commands and `clear`
-- `400` for empty input
-- `422` for unsupported commands
-
-The route normalizes whitespace and compares command strings. It never passes input to an operating
-system shell.
+These prototype routes are not exposed by the current interface. The real-terminal option remains
+disabled and labelled **Coming soon**.
 
 ## 7. Browser state
 
@@ -171,13 +193,16 @@ Non-persistent React state includes:
 
 - Current view and lesson
 - Mobile navigation state
-- Terminal history and current input
-- Completed terminal challenges
+- Completed guided terminal scenarios
 - Open knowledge topic
 - Quiz selection
 - Git-map phase
 - Certificate dialog state
 - Authentication dialog and current session state
+- AI chat messages for the current page session
+- In-memory Git repository and terminal history
+
+Simulator history and repository state live only in React memory and reset with the page.
 
 No state is synchronized between devices.
 
@@ -219,8 +244,10 @@ The entered name and generated certificate are not sent to the backend.
 
 - Helmet provides standard HTTP security headers
 - JSON request bodies are limited to 32 KB
-- The terminal is a string-matching simulation
-- No secrets are required by the application
+- Supabase JWTs are verified using the project's signed JWKS
+- Simulator commands never reach a shell or operating-system process
+- `GROQ_API_KEY` is a server secret and never a Vite variable
+- AI context is selected only from `server/guide.js`
 - No learner profile is stored on the server
 - Certificate generation is client-side
 - External documentation and community links open with `rel="noreferrer"`
@@ -234,8 +261,10 @@ enabling it.
 | Failure | User-visible behavior |
 | --- | --- |
 | Guide API unavailable | Bundled guide content is loaded |
-| Terminal API unavailable | Terminal displays a retry message |
-| Unsupported command | Simulator returns a helpful `422` response |
+| User is signed out | AI helper displays a sign-in action; guided simulation remains available |
+| Real sandbox selected | Disabled option displays **Coming soon** |
+| Groq is unconfigured or unavailable | AI helper returns a safe temporary-unavailable message |
+| Question is outside retrieved guide content | Assistant says learnGit does not cover it yet |
 | Invalid stored progress JSON | Progress resets to an empty array |
 | Certificate name empty | Download button stays disabled |
 
@@ -246,6 +275,8 @@ Required checks:
 ```bash
 npm run check
 npm run build
+npm run check:sandbox
+npm run build:sandbox
 ```
 
 Recommended manual checks:
@@ -254,12 +285,15 @@ Recommended manual checks:
 - Desktop and mobile layouts
 - Lesson selection and progress persistence
 - Quiz answer correctness after shuffling
-- Terminal supported and unsupported commands
+- Every guided scenario goal, reset, undo, and responsive map/terminal layout
+- AI sign-in gate, grounded answers, and uncovered-topic refusal
 - Certificate unlock and PDF download
 
 ## 14. Maintenance rules
 
 - Keep `server/guide.js` as the authoritative learning-content source
-- Keep terminal behavior deterministic and non-executing
+- Keep the guided terminal deterministic and prevent operating-system command execution
+- Keep provider secrets out of client bundles and Git
+- Keep AI answers grounded in retrieved `server/guide.js` excerpts
 - Update this document when routes, storage keys, environment variables, or runtime components change
 - Update `ARCHITECTURE.md` when data flow or component boundaries change

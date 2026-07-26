@@ -1,6 +1,6 @@
-# Git Together documentation
+# learnGit documentation
 
-This directory contains maintainer-facing documentation for the Git Together application.
+This directory contains maintainer-facing documentation for the learnGit application.
 
 ## Documents
 

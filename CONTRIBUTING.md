@@ -1,4 +1,4 @@
-# Contributing to Git Together
+# Contributing to learnGit
 
 Thank you for helping make Git and GitHub easier for new community contributors.
 
@@ -8,12 +8,12 @@ Thank you for helping make Git and GitHub easier for new community contributors.
 - Make English or Burmese text shorter and clearer
 - Add a practical beginner workflow
 - Improve accessibility or responsive behavior
-- Add a safe terminal simulation
+- Improve the guided terminal or guide-grounded assistant
 - Fix a bug with lessons, progress, quizzes, or certificates
 - Improve tests or documentation
 
-Keep the guide focused. Features that require accounts, collect learner data, or execute real shell
-commands are outside the current project scope.
+Keep the guide focused. The guided terminal must never execute operating-system commands, and AI answers
+must stay grounded in the committed learning content.
 
 ## Set up the project
 
@@ -88,8 +88,10 @@ before display.
 
 - Follow the existing React function-component style
 - Keep user-facing strings bilingual through `t(english, burmese)` or the `my` content object
-- Keep terminal responses simulated; never pass user input to `child_process`, a shell, or `eval`
-- Preserve the no-auth and local-progress architecture
+- Never pass terminal input to `child_process`, a shell, or `eval` in Express or Vercel
+- Keep Git simulation deterministic and browser-only
+- Never expose provider secrets to Vite or browser code
+- Keep AI retrieval grounded in `server/guide.js`
 - Avoid adding dependencies for behavior that can be implemented clearly with the existing stack
 - Keep buttons and interface text direct and minimal
 
@@ -113,16 +115,24 @@ For lesson changes, verify:
 
 For terminal changes, verify:
 
-- Empty input returns a helpful error
-- Supported commands return simulated output
-- Unsupported commands never execute on the host
+- The map and terminal update together for each supported command
+- Undo, reset, goal detection, and every scenario work
+- The side-by-side desktop layout stacks cleanly on mobile
+- No command reaches a shell or backend execution API
+
+For AI helper changes, verify:
+
+- Unsigned users are rejected
+- The Groq key remains server-side
+- Answers cite selected learnGit sources and decline uncovered topics
 
 ## Pull request checklist
 
 - [ ] The change solves one clear issue
 - [ ] English and Burmese content remain aligned
 - [ ] The interface remains readable on mobile
-- [ ] No login, tracking, or real command execution was introduced
+- [ ] Real commands cannot reach the application host
+- [ ] No API keys or signing secrets were committed
 - [ ] `npm run check` passes
 - [ ] `npm run build` passes
 - [ ] Documentation was updated when behavior or architecture changed
