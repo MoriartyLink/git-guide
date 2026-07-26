@@ -1699,11 +1699,6 @@ function TerminalLab({
 
           <section className="terminal-card lab-terminal">
             <div className="terminal-titlebar">
-              <span className="traffic-lights">
-                <i />
-                <i />
-                <i />
-              </span>
               <span className="terminal-window-name">
                 {terminalMode === "sandbox" ? "learn-git-sandbox" : "learn-git-guided"}
                 <i className={`terminal-status-dot ${connectionStatus}`} />

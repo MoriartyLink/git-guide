@@ -1197,32 +1197,6 @@ body[data-language="my"] strong {
   color: white;
 }
 
-.traffic-lights {
-  position: absolute;
-  left: 14px;
-  display: flex;
-  gap: 6px;
-}
-
-.traffic-lights i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #3b443e;
-}
-
-.traffic-lights i:first-child {
-  background: #f56565;
-}
-
-.traffic-lights i:nth-child(2) {
-  background: #eabf55;
-}
-
-.traffic-lights i:nth-child(3) {
-  background: #4cc779;
-}
-
 .terminal-body {
   min-height: 400px;
   padding: 23px 26px;
@@ -3393,6 +3367,10 @@ footer {
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
 }
 
+.visual-terminal .terminal-titlebar {
+  font-size: 12px;
+}
+
 .visual-terminal-output {
   min-height: 430px;
   flex: 1;
@@ -3400,8 +3378,8 @@ footer {
   padding: 15px 16px;
   color: #7e8981;
   font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
-  line-height: 1.72;
+  font-size: 15px;
+  line-height: 1.76;
   scrollbar-color: #343539 transparent;
   scrollbar-width: thin;
 }
@@ -3458,7 +3436,7 @@ footer {
 
 .command-suggestions > span {
   color: #74757a;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 .command-suggestions button {
@@ -3469,7 +3447,7 @@ footer {
   color: #98999e;
   background: #191a1c;
   font-family: "JetBrains Mono", monospace;
-  font-size: 9px;
+  font-size: 11px;
   cursor: pointer;
 }
 
@@ -3491,7 +3469,7 @@ footer {
 
 .visual-terminal-input > span {
   color: var(--green);
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .visual-terminal-input input {
@@ -3502,7 +3480,7 @@ footer {
   color: #e4e4e7;
   background: transparent;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .visual-terminal-input input::placeholder {

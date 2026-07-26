@@ -502,7 +502,6 @@ export default function GuidedGitSimulator({
 
         <section className="visual-terminal">
             <div className="terminal-titlebar">
-              <span className="traffic-lights"><i /><i /><i /></span>
               <span className="terminal-window-name">
                 learnGit visual engine
                 <i className="terminal-status-dot connected" />
