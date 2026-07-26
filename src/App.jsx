@@ -19,6 +19,7 @@ import {
   LogIn,
   LogOut,
   Mail,
+  Maximize2,
   Menu,
   RotateCcw,
   Search,
@@ -610,7 +611,71 @@ function MobileMenu({
   );
 }
 
-function AuthModal({ open, onClose, initialMode = "login" }) {
+function getAuthErrorMessage(error, t) {
+  const messagesByCode = {
+    email_address_invalid: t(
+      "Enter a valid email address.",
+      "မှန်ကန်သော Email လိပ်စာ ထည့်ပါ",
+    ),
+    email_address_not_authorized: t(
+      "Confirmation emails are not configured for this address. Please contact the app owner.",
+      "ဒီ Email အတွက် confirmation email ပို့ရန် မပြင်ဆင်ရသေးပါ App owner ကို ဆက်သွယ်ပါ",
+    ),
+    email_provider_disabled: t(
+      "Email and password sign-up is currently unavailable.",
+      "Email နဲ့ password ဖြင့် အကောင့်ဖန်တီးခြင်းကို လောလောဆယ် အသုံးမပြုနိုင်ပါ",
+    ),
+    invalid_credentials: t(
+      "The email or password is incorrect.",
+      "Email သို့မဟုတ် password မှားနေပါသည်",
+    ),
+    over_email_send_rate_limit: t(
+      "Too many emails were requested. Please wait a few minutes and try again.",
+      "Email အကြိမ်များလွန်းနေပါသည် မိနစ်အနည်းငယ်စောင့်ပြီး ထပ်စမ်းပါ",
+    ),
+    over_request_rate_limit: t(
+      "Too many attempts. Please wait a few minutes and try again.",
+      "ကြိုးစားမှုများလွန်းနေပါသည် မိနစ်အနည်းငယ်စောင့်ပြီး ထပ်စမ်းပါ",
+    ),
+    signup_disabled: t(
+      "New account creation is currently disabled.",
+      "အကောင့်အသစ်ဖန်တီးခြင်းကို လောလောဆယ် ပိတ်ထားပါသည်",
+    ),
+    weak_password: t(
+      "Choose a stronger password and try again.",
+      "ပိုမိုခိုင်မာသော password ရွေးပြီး ထပ်စမ်းပါ",
+    ),
+  };
+
+  if (typeof error?.code === "string" && messagesByCode[error.code]) {
+    return messagesByCode[error.code];
+  }
+
+  const possibleMessages = [
+    error?.message,
+    error?.error_description,
+    error?.msg,
+    typeof error === "string" ? error : "",
+  ];
+  const message = possibleMessages.find((value) => {
+    if (typeof value !== "string") return false;
+    const normalized = value.trim();
+    return (
+      normalized &&
+      normalized !== "{}" &&
+      normalized !== "[]" &&
+      normalized !== "null" &&
+      normalized !== "[object Object]"
+    );
+  });
+
+  return message?.trim() || t(
+    "Authentication failed. Please try again.",
+    "အကောင့်ဝင်၍မရပါ ထပ်စမ်းပါ",
+  );
+}
+
+function AuthModal({ open, onClose, initialMode = "login", required = false }) {
   const { t } = useLanguage();
   const [mode, setMode] = useState(initialMode);
   const [fullName, setFullName] = useState("");
@@ -640,12 +705,12 @@ function AuthModal({ open, onClose, initialMode = "login" }) {
     setError("");
     setNotice("");
     const closeOnEscape = (event) => {
-      if (event.key === "Escape") onClose();
+      if (!required && event.key === "Escape") onClose?.();
     };
     document.addEventListener("keydown", closeOnEscape);
     window.setTimeout(() => emailRef.current?.focus(), 20);
     return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [initialMode, open, onClose]);
+  }, [initialMode, open, onClose, required]);
 
   if (!open) return null;
 
@@ -676,7 +741,7 @@ function AuthModal({ open, onClose, initialMode = "login" }) {
       if (mode === "login") {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
-        onClose();
+        onClose?.();
       } else if (mode === "signup") {
         const { data, error: signUpError } = await supabase.auth.signUp({
           email,
@@ -687,8 +752,10 @@ function AuthModal({ open, onClose, initialMode = "login" }) {
         });
         if (signUpError) throw signUpError;
         if (data.session) {
-          onClose();
+          onClose?.();
         } else {
+          setMode("login");
+          setFullName("");
           setNotice(
             t(
               "Account created. Check your email to confirm your address, then sign in.",
@@ -719,25 +786,44 @@ function AuthModal({ open, onClose, initialMode = "login" }) {
         setConfirmation("");
       }
     } catch (authError) {
-      setError(authError?.message || t("Authentication failed. Please try again.", "ဝင်၍မရပါ ထပ်စမ်းပါ"));
+      setError(getAuthErrorMessage(authError, t));
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-      <button className="auth-backdrop" onClick={onClose} aria-label={t("Close", "ပိတ်မယ်")} />
+    <div
+      className={`auth-modal${required ? " auth-required" : ""}`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="auth-title"
+    >
+      {required ? (
+        <div className="auth-backdrop" aria-hidden="true" />
+      ) : (
+        <button className="auth-backdrop" onClick={onClose} aria-label={t("Close", "ပိတ်မယ်")} />
+      )}
       <section className="auth-card">
         <div className="auth-card-head">
-          <span className="auth-mark">
-            <UserRound size={20} />
-          </span>
-          <button className="icon-button" onClick={onClose} aria-label={t("Close", "ပိတ်မယ်")}>
-            <X size={18} />
-          </button>
+          {required ? (
+            <Logo />
+          ) : (
+            <span className="auth-mark">
+              <UserRound size={20} />
+            </span>
+          )}
+          {!required && (
+            <button className="icon-button" onClick={onClose} aria-label={t("Close", "ပိတ်မယ်")}>
+              <X size={18} />
+            </button>
+          )}
         </div>
-        <span className="kicker">{t("YOUR ACCOUNT", "သင့်အကောင့်")}</span>
+        <span className="kicker">
+          {required
+            ? t("SIGN IN TO CONTINUE", "ဆက်သွားရန် အကောင့်ဝင်ပါ")
+            : t("YOUR ACCOUNT", "သင့်အကောင့်")}
+        </span>
         <h2 id="auth-title">
           {mode === "login" && t("Welcome back.", "ပြန်လည် ကြိုဆိုပါတယ်")}
           {mode === "signup" && t("Learn with an account.", "အကောင့်နဲ့ လေ့လာမယ်")}
@@ -750,13 +836,22 @@ function AuthModal({ open, onClose, initialMode = "login" }) {
           {mode === "forgot" && t("Enter your account email and we will send a secure recovery link.", "အကောင့် email ထည့်ပါ လုံခြုံတဲ့ recovery link ပို့ပေးမယ်")}
           {mode === "recovery" && t("Use at least eight characters, then confirm the new password.", "အနည်းဆုံး ၈ လုံးသုံးပြီး password အသစ်ကို အတည်ပြုပါ")}
         </p>
+        {required && (mode === "login" || mode === "signup") && (
+          <p className="auth-required-note">
+            <LockKeyhole size={14} />
+            {t(
+              "An account is required to access lessons, practice tools, and saved progress.",
+              "Lessons၊ practice tools နဲ့ progress များကိုသုံးရန် အကောင့်လိုအပ်ပါသည်",
+            )}
+          </p>
+        )}
 
         {(mode === "login" || mode === "signup") && (
           <div className="auth-tabs" role="tablist" aria-label={t("Account options", "အကောင့် ရွေးချယ်မှု")}>
-            <button className={mode === "login" ? "active" : ""} onClick={() => changeMode("login")} role="tab" aria-selected={mode === "login"}>
+            <button type="button" className={mode === "login" ? "active" : ""} onClick={() => changeMode("login")} role="tab" aria-selected={mode === "login"}>
               {t("Sign in", "ဝင်မယ်")}
             </button>
-            <button className={mode === "signup" ? "active" : ""} onClick={() => changeMode("signup")} role="tab" aria-selected={mode === "signup"}>
+            <button type="button" className={mode === "signup" ? "active" : ""} onClick={() => changeMode("signup")} role="tab" aria-selected={mode === "signup"}>
               {t("Create account", "အကောင့်ဖန်တီးမယ်")}
             </button>
           </div>
@@ -1781,6 +1876,142 @@ function GuideSidebar({ guide, activeLesson, completed, onSelect, open, onClose 
   );
 }
 
+function LessonMedia({ lesson }) {
+  const { language, t } = useLanguage();
+  const [expandedImage, setExpandedImage] = useState(null);
+
+  useEffect(() => {
+    setExpandedImage(null);
+  }, [lesson.id]);
+
+  useEffect(() => {
+    if (!expandedImage) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setExpandedImage(null);
+    };
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [expandedImage]);
+
+  if (!lesson.media?.length) return null;
+
+  const points = localize(lesson, "points", language) || [];
+  const sections = localize(lesson, "sections", language) || [];
+  return (
+    <>
+    <section className="lesson-media">
+      <div className="lesson-flow-summary">
+        {points.map((point, index) => (
+          <div key={point.title}>
+            <span>{index + 1}</span>
+            <strong>{point.title}</strong>
+            <small>{point.copy}</small>
+          </div>
+        ))}
+      </div>
+      <div className="lesson-image-grid">
+        {lesson.media.map((item) => (
+          <figure key={item.src}>
+            <button
+              type="button"
+              className="lesson-image-button"
+              onClick={() => setExpandedImage(item)}
+              aria-label={t("Expand lesson image", "Lesson ပုံကို ချဲ့ကြည့်မယ်")}
+            >
+              <img
+                src={item.src}
+                alt={item.alt}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+              />
+              <span><Maximize2 size={15} />{t("Expand", "ချဲ့မယ်")}</span>
+            </button>
+            <figcaption>
+              {language === "my" ? item.captionMy || item.caption : item.caption}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+      {sections.length > 0 && (
+        <section className="lesson-reference-details">
+          <div>
+            <small>{t("ARTICLE-BASED REFERENCE", "ARTICLE ကိုအခြေခံသော REFERENCE")}</small>
+            <h2>{t("The Git basics you will use most", "အသုံးအများဆုံး Git အခြေခံများ")}</h2>
+            <p>
+              {t(
+                "Read one card at a time. The commands show the practical order.",
+                "Card တစ်ခုချင်းဖတ်ပါ Commands များက လက်တွေ့အစဉ်ကိုပြတယ်",
+              )}
+            </p>
+          </div>
+          <div className="lesson-reference-grid">
+            {sections.map((section, index) => (
+              <article key={section.title}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h3>{section.title}</h3>
+                <p>{section.copy}</p>
+                {section.commands?.length > 0 && (
+                  <div>
+                    {section.commands.map((command) => <code key={command}>{command}</code>)}
+                  </div>
+                )}
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+      {lesson.source && (
+        <div className="lesson-source">
+          <span>
+            {language === "my"
+              ? lesson.source.creditMy || lesson.source.credit
+              : lesson.source.credit}
+          </span>
+          <a href={lesson.source.url} target="_blank" rel="noreferrer">
+            {language === "my"
+              ? lesson.source.labelMy || lesson.source.label
+              : lesson.source.label}
+            <ExternalLink size={14} />
+          </a>
+        </div>
+      )}
+      <p className="lesson-media-note">
+        {t(
+          "Remember: edit → add → commit → push.",
+          "မှတ်ရန် — edit → add → commit → push",
+        )}
+      </p>
+    </section>
+    {expandedImage && (
+      <div className="lesson-image-lightbox" role="dialog" aria-modal="true" aria-label={t("Expanded lesson image", "ချဲ့ထားသော lesson ပုံ")}>
+        <button
+          type="button"
+          className="lesson-image-backdrop"
+          onClick={() => setExpandedImage(null)}
+          aria-label={t("Close expanded image", "ချဲ့ထားသောပုံ ပိတ်မယ်")}
+        />
+        <figure>
+          <button type="button" onClick={() => setExpandedImage(null)} aria-label={t("Close", "ပိတ်မယ်")}>
+            <X size={20} />
+          </button>
+          <img src={expandedImage.src} alt={expandedImage.alt} referrerPolicy="no-referrer" />
+          <figcaption>
+            {language === "my"
+              ? expandedImage.captionMy || expandedImage.caption
+              : expandedImage.caption}
+          </figcaption>
+        </figure>
+      </div>
+    )}
+    </>
+  );
+}
+
 function CommandBlock({ label, command, onTry }) {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
@@ -2185,6 +2416,7 @@ function LessonView({
           </div>
           <h1>{localize(lesson, "title", language)}</h1>
           <p className="lesson-lead">{localize(lesson, "summary", language)}</p>
+          <LessonMedia lesson={lesson} />
 
           <h2>{t("Try the command", "Command ကို စမ်းမယ်")}</h2>
           <p>
@@ -2913,38 +3145,64 @@ export default function App() {
   const [initialCommand, setInitialCommand] = useState("");
 
   useEffect(() => {
+    if (!session) return undefined;
+
+    let active = true;
     fetch(`${API_BASE}/api/guide`)
       .then((response) => {
         if (!response.ok) throw new Error("Guide unavailable");
         return response.json();
       })
-      .then(setGuide)
+      .then((content) => {
+        if (active) setGuide(content);
+      })
       .catch(() => {
-        import("../server/guide.js").then((content) =>
-          setGuide({
-            name: "learnGit",
-            modules: content.modules,
-            knowledgeTopics: content.knowledgeTopics,
-          }),
-        );
+        import("../server/guide.js").then((content) => {
+          if (active) {
+            setGuide({
+              name: "learnGit",
+              modules: content.modules,
+              knowledgeTopics: content.knowledgeTopics,
+            });
+          }
+        });
       });
-  }, []);
+
+    return () => {
+      active = false;
+    };
+  }, [session]);
 
   useEffect(() => {
     if (!supabase) return undefined;
 
     let active = true;
-    supabase.auth
-      .getSession()
-      .then(({ data }) => {
-        if (active) setSession(data.session);
+    const loadVerifiedSession = async () => {
+      const {
+        data: { session: storedSession },
+      } = await supabase.auth.getSession();
+
+      if (!storedSession) {
+        if (active) setSession(null);
+        return;
+      }
+
+      const { data, error } = await supabase.auth.getClaims();
+      if (active) setSession(!error && data?.claims ? storedSession : null);
+    };
+
+    void loadVerifiedSession()
+      .catch(() => {
+        if (active) setSession(null);
       })
       .finally(() => {
         if (active) setAuthReady(true);
       });
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      if (event === "INITIAL_SESSION") return;
       setSession(nextSession);
       setAuthReady(true);
       if (event === "PASSWORD_RECOVERY") {
@@ -3016,6 +3274,8 @@ export default function App() {
   const signOut = async () => {
     if (!supabase) return;
     await supabase.auth.signOut();
+    setAuthMode("login");
+    setAuthOpen(false);
     setProfileOpen(false);
     setMobileMenu(false);
   };
@@ -3031,77 +3291,91 @@ export default function App() {
 
   return (
     <LanguageContext.Provider value={languageValue}>
-    <div className="app-shell">
-      <FirstTimeTour onNavigate={navigate} />
-      <TopBar
-        currentView={view}
-        onNavigate={navigate}
-        onOpenMenu={() => setMobileMenu(true)}
-        session={session}
-        authReady={authReady}
-        onOpenAuth={openAuth}
-        onOpenProfile={() => setProfileOpen(true)}
-        onSignOut={signOut}
-      />
-      <MobileMenu
-        open={mobileMenu}
-        onClose={() => setMobileMenu(false)}
-        onNavigate={navigate}
-        session={session}
-        authReady={authReady}
-        onOpenAuth={openAuth}
-        onOpenProfile={() => setProfileOpen(true)}
-        onSignOut={signOut}
-      />
-      <AuthModal open={authOpen} onClose={closeAuth} initialMode={authMode} />
-      <ProfileModal
-        open={profileOpen}
-        onClose={closeProfile}
-        session={session}
-        completedCount={completed.length}
-        progressStatus={progressStatus}
-        progressError={progressError}
-        sharedProfile={sharedProfile}
-      />
-      {view === "home" && (
-        <Home
-          guide={guide}
-          completed={completed}
-          onOpenLesson={openLesson}
-          onKnowledge={() => navigate("knowledge")}
+      {!authReady ? (
+        <main className="auth-loading-screen" aria-live="polite">
+          <Logo />
+          <LoaderCircle className="spinning" size={24} />
+          <p>{languageValue.t("Checking your account…", "သင့်အကောင့်ကို စစ်ဆေးနေသည်…")}</p>
+        </main>
+      ) : !session ? (
+        <AuthModal
+          open
+          required
+          initialMode={authMode === "recovery" ? "login" : authMode}
         />
+      ) : (
+        <div className="app-shell">
+          <FirstTimeTour onNavigate={navigate} />
+          <TopBar
+            currentView={view}
+            onNavigate={navigate}
+            onOpenMenu={() => setMobileMenu(true)}
+            session={session}
+            authReady={authReady}
+            onOpenAuth={openAuth}
+            onOpenProfile={() => setProfileOpen(true)}
+            onSignOut={signOut}
+          />
+          <MobileMenu
+            open={mobileMenu}
+            onClose={() => setMobileMenu(false)}
+            onNavigate={navigate}
+            session={session}
+            authReady={authReady}
+            onOpenAuth={openAuth}
+            onOpenProfile={() => setProfileOpen(true)}
+            onSignOut={signOut}
+          />
+          <AuthModal open={authOpen} onClose={closeAuth} initialMode={authMode} />
+          <ProfileModal
+            open={profileOpen}
+            onClose={closeProfile}
+            session={session}
+            completedCount={completed.length}
+            progressStatus={progressStatus}
+            progressError={progressError}
+            sharedProfile={sharedProfile}
+          />
+          {view === "home" && (
+            <Home
+              guide={guide}
+              completed={completed}
+              onOpenLesson={openLesson}
+              onKnowledge={() => navigate("knowledge")}
+            />
+          )}
+          {view === "lesson" && (
+            <LessonView
+              guide={guide}
+              lessonId={lessonId}
+              completed={completed}
+              onSelect={openLesson}
+              onBack={() => navigate("home")}
+              onTerminal={openTerminal}
+              onToggleComplete={toggleLesson}
+            />
+          )}
+          {view === "terminal" && (
+            <TerminalLab
+              completedChallenges={completedChallenges}
+              setCompletedChallenges={setCompletedChallenges}
+              initialCommand={initialCommand}
+              onOpenAuth={openAuth}
+              session={session}
+            />
+          )}
+          {view === "knowledge" && <KnowledgePage topics={guide.knowledgeTopics || []} />}
+          {view === "cheatsheet" && <CheatSheet onTry={openTerminal} />}
+          {view !== "lesson" && <Footer />}
+          <GuideChat
+            apiBase={API_BASE}
+            language={language}
+            onOpenAuth={openAuth}
+            session={session}
+            t={languageValue.t}
+          />
+        </div>
       )}
-      {view === "lesson" && (
-        <LessonView
-          guide={guide}
-          lessonId={lessonId}
-          completed={completed}
-          onSelect={openLesson}
-          onBack={() => navigate("home")}
-          onTerminal={openTerminal}
-          onToggleComplete={toggleLesson}
-        />
-      )}
-      {view === "terminal" && (
-        <TerminalLab
-          completedChallenges={completedChallenges}
-          setCompletedChallenges={setCompletedChallenges}
-          initialCommand={initialCommand}
-          onOpenAuth={openAuth}
-          session={session}
-        />
-      )}
-      {view === "knowledge" && <KnowledgePage topics={guide.knowledgeTopics || []} />}
-      {view === "cheatsheet" && <CheatSheet onTry={openTerminal} />}
-      {view !== "lesson" && <Footer />}
-      <GuideChat
-        apiBase={API_BASE}
-        language={language}
-        onOpenAuth={openAuth}
-        session={session}
-        t={languageValue.t}
-      />
-    </div>
     </LanguageContext.Provider>
   );
 }

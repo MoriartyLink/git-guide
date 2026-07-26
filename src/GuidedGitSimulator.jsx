@@ -37,7 +37,7 @@ function laneColor(lane, lanes) {
   return LANE_COLORS[Math.max(0, lanes.indexOf(lane)) % LANE_COLORS.length];
 }
 
-function RepoMap({ onRunCommand, state, t }) {
+function RepoMap({ expanded, onRunCommand, state, t }) {
   const [hoveredId, setHoveredId] = useState(() => simulatorHead(state));
   const [zoom, setZoom] = useState(100);
   const [zoomOpen, setZoomOpen] = useState(true);
@@ -83,7 +83,7 @@ function RepoMap({ onRunCommand, state, t }) {
 
   return (
     <>
-      <div className={`map-zoom-control ${zoomOpen ? "open" : "closed"}`}>
+      {expanded && <div className={`map-zoom-control ${zoomOpen ? "open" : "closed"}`}>
         <div className="map-zoom-heading">
           <span>{t("View size", "View size")}</span>
           <div>
@@ -115,7 +115,7 @@ function RepoMap({ onRunCommand, state, t }) {
             {t("Reset", "Reset")}
           </button>
         </div>}
-      </div>
+      </div>}
       <div className="git-map-scroll">
         <svg
           className="git-repo-map"
@@ -637,7 +637,7 @@ export default function GuidedGitSimulator({
               <span><GitBranch size={12} /> {branchCount} branches</span>
               <span>remote {remoteCount}</span>
             </div>
-            <RepoMap onRunCommand={runCommand} state={repo} t={t} />
+            <RepoMap expanded={mapExpanded} onRunCommand={runCommand} state={repo} t={t} />
             <footer>
               <span><i className="legend-head" /> HEAD: {repo.detached || repo.head}</span>
               <span><i className="legend-work" /> {repo.working.length} working</span>

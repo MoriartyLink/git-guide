@@ -4,13 +4,13 @@ learnGit is a public, bilingual Git and GitHub learning guide for community cont
 combines short lessons, a stateful guided terminal, practical cheat sheets, randomized
 knowledge checks, a guide-grounded AI helper, and a downloadable completion certificate.
 
-Learners can create an optional account or sign in with email and password. Learning progress still
-stays in the learner's browser.
+Learners sign up or sign in with email and password before accessing the guide. Signed-in learning
+progress is synchronized to Supabase and cached in the learner's browser.
 
 ## Features
 
 - English and Burmese interfaces
-- Optional Supabase email/password accounts with persistent sessions
+- Required Supabase email/password accounts with persistent sessions
 - 7 learning modules with 34 beginner-focused lessons
 - 49 searchable Git and GitHub knowledge topics
 - Stateful client-side guided terminal with a synchronized commit map
