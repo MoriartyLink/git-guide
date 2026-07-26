@@ -1246,6 +1246,65 @@ function fitCertificateText(context, text, maxWidth, startSize, fontFamily) {
   return size;
 }
 
+function certificateFingerprint(value) {
+  let hash = 2166136261;
+  for (const character of value) {
+    hash ^= character.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(16).toUpperCase().padStart(8, "0");
+}
+
+function drawCertificateSecurityLines(context, width, seed) {
+  const phase = (seed % 360) * (Math.PI / 180);
+
+  context.save();
+  context.translate(width / 2, 535);
+  context.lineWidth = 0.7;
+
+  for (let layer = 0; layer < 28; layer += 1) {
+    const radiusX = 590 - layer * 7;
+    const radiusY = 250 - layer * 2.4;
+    context.strokeStyle =
+      layer % 2 === 0 ? "rgba(48, 209, 88, 0.095)" : "rgba(245, 245, 247, 0.045)";
+    context.beginPath();
+
+    for (let step = 0; step <= 720; step += 1) {
+      const angle = (step / 720) * Math.PI * 2;
+      const weave =
+        Math.sin(angle * 9 + phase + layer * 0.31) * (12 + layer * 0.18) +
+        Math.cos(angle * 5 - phase * 0.7) * 7;
+      const x = Math.cos(angle) * (radiusX + weave);
+      const y = Math.sin(angle) * (radiusY + weave * 0.38);
+      if (step === 0) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    }
+
+    context.closePath();
+    context.stroke();
+  }
+
+  context.restore();
+
+  context.save();
+  context.lineWidth = 0.55;
+  context.strokeStyle = "rgba(48, 209, 88, 0.075)";
+  for (let row = 0; row < 13; row += 1) {
+    const baseline = 390 + row * 25;
+    context.beginPath();
+    for (let x = 170; x <= width - 170; x += 4) {
+      const y =
+        baseline +
+        Math.sin(x * 0.024 + phase + row * 0.52) * 9 +
+        Math.sin(x * 0.061 - phase) * 3;
+      if (x === 170) context.moveTo(x, y);
+      else context.lineTo(x, y);
+    }
+    context.stroke();
+  }
+  context.restore();
+}
+
 async function downloadCertificate(name, language) {
   await document.fonts.ready;
   const { jsPDF } = await import("jspdf");
@@ -1255,6 +1314,12 @@ async function downloadCertificate(name, language) {
   const context = canvas.getContext("2d");
   const isBurmese = language === "my";
   const fontFamily = isBurmese ? '"Noto Sans Myanmar", sans-serif' : '"DM Sans", sans-serif';
+  const issuedAt = new Date();
+  const issueDateKey = issuedAt.toISOString().slice(0, 10).replaceAll("-", "");
+  const issueEntropy =
+    globalThis.crypto?.randomUUID?.() || `${issuedAt.getTime()}-${Math.random()}`;
+  const issueFingerprint = certificateFingerprint(`${name}-${issueEntropy}`);
+  const certificateId = `LG-${issueDateKey}-${issueFingerprint}`;
 
   const background = context.createLinearGradient(0, 0, canvas.width, canvas.height);
   background.addColorStop(0, "#080b09");
@@ -1274,6 +1339,8 @@ async function downloadCertificate(name, language) {
   context.strokeStyle = "rgba(48, 209, 88, 0.25)";
   context.lineWidth = 1;
   context.strokeRect(72, 72, canvas.width - 144, canvas.height - 144);
+
+  drawCertificateSecurityLines(context, canvas.width, Number.parseInt(issueFingerprint, 16));
 
   context.textAlign = "center";
   context.fillStyle = "#30d158";
@@ -1322,7 +1389,7 @@ async function downloadCertificate(name, language) {
       year: "numeric",
       month: "long",
       day: "numeric",
-    }).format(new Date()),
+    }).format(issuedAt),
     420,
     920,
   );
@@ -1335,19 +1402,23 @@ async function downloadCertificate(name, language) {
   context.font = `500 22px ${fontFamily}`;
   context.fillText("Talkware Lead", 1264, 960);
 
+  context.fillStyle = "rgba(161, 161, 166, 0.82)";
+  context.font = `500 17px ${fontFamily}`;
+  context.fillText(`${isBurmese ? "လက်မှတ်အမှတ်" : "Certificate ID"} · ${certificateId}`, 842, 1060);
+
   const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, 297, 210);
   const safeName = name.replace(/[^\p{L}\p{N}-]+/gu, "-").replace(/^-|-$/g, "") || "learner";
   pdf.save(`learn-git-certificate-${safeName}.pdf`);
 }
 
-function CompletionCertificateCard({ completed, lessonCount }) {
+function CompletionCertificateCard({ completed, lessonIds }) {
   const { language, t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [creating, setCreating] = useState(false);
-  const allDone = lessonCount > 0 && completed.length >= lessonCount;
-  const remaining = Math.max(lessonCount - completed.length, 0);
+  const allDone =
+    lessonIds.length > 0 && lessonIds.every((lessonId) => completed.includes(lessonId));
 
   const createCertificate = async (event) => {
     event.preventDefault();
@@ -1362,30 +1433,26 @@ function CompletionCertificateCard({ completed, lessonCount }) {
     }
   };
 
+  if (!allDone) return null;
+
   return (
     <>
-      <article className={`certificate-card ${allDone ? "unlocked" : ""}`}>
+      <article className="certificate-card unlocked">
         <div>
           <span className="kicker">{t("GIT GUIDE CLASS", "GIT GUIDE CLASS")}</span>
           <h3>{t("Certificate of completion", "ပြီးမြောက်ကြောင်း လက်မှတ်")}</h3>
           <p>
-            {allDone
-              ? t(
-                  "You finished every lesson. Your certificate is ready.",
-                  "သင်ခန်းစာအားလုံး ပြီးပါပြီ သင့်လက်မှတ် အဆင်သင့်ဖြစ်ပါပြီ",
-                )
-              : t(
-                  `Complete ${remaining} more ${remaining === 1 ? "lesson" : "lessons"} to unlock your certificate.`,
-                  `လက်မှတ်ရရန် သင်ခန်းစာ ${remaining} ခု ထပ်ပြီးအောင်လုပ်ပါ`,
-                )}
+            {t(
+              "You finished every lesson. Your certificate is ready.",
+              "သင်ခန်းစာအားလုံး ပြီးပါပြီ သင့်လက်မှတ် အဆင်သင့်ဖြစ်ပါပြီ",
+            )}
           </p>
         </div>
         <button
           className="primary-button"
-          disabled={!allDone}
           onClick={() => setOpen(true)}
         >
-          {allDone ? t("Get certificate", "လက်မှတ်ရယူမယ်") : t("Not ready yet", "မပြီးသေးပါ")}
+          {t("Get certificate", "လက်မှတ်ရယူမယ်")}
         </button>
       </article>
 
@@ -1443,7 +1510,8 @@ function CompletionCertificateCard({ completed, lessonCount }) {
 function PathSection({ guide, completed, onOpenLesson, pathRef }) {
   const { language, t } = useLanguage();
   const moduleCount = guide.modules.length;
-  const lessonCount = guide.modules.reduce((total, module) => total + module.lessons.length, 0);
+  const lessonIds = guide.modules.flatMap((module) => module.lessons.map((lesson) => lesson.id));
+  const lessonCount = lessonIds.length;
   const levels = [
     {
       id: "Beginner",
@@ -1535,7 +1603,7 @@ function PathSection({ guide, completed, onOpenLesson, pathRef }) {
             );
           })}
         </div>
-        <CompletionCertificateCard completed={completed} lessonCount={lessonCount} />
+        <CompletionCertificateCard completed={completed} lessonIds={lessonIds} />
       </div>
     </section>
   );
