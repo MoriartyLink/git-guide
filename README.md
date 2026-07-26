@@ -91,10 +91,16 @@ and a newly rotated Groq key. The exact key name is `GROQ_API_KEY`—provider cr
 use the `VITE_` prefix. Restart `npm run dev` after changing `.env`. In a hosted environment, add
 the same server variables to the deployment configuration and redeploy.
 
-For forgot-password links, add the local and deployed app URLs to **Supabase → Authentication →
-URL Configuration → Redirect URLs**. The app requests a return URL such as
-`https://your-domain.example/?password-reset=1`; Supabase returns the recovery session to that page,
-where the learner can choose a new password.
+For signup-confirmation and forgot-password links, set the deployed app as **Supabase →
+Authentication → URL Configuration → Site URL**, then add both the local and deployed app URLs to
+**Redirect URLs**. The app sends new-account confirmations back to the current origin and requests a
+password-reset return URL such as `https://your-domain.example/?password-reset=1`.
+
+Production signup also requires working credentials under **Supabase → Authentication → Emails →
+SMTP Settings**. Check the Supabase Auth logs if account creation reports that the confirmation
+email service is unavailable. A Gmail SMTP account must use a current Google App Password rather
+than the account's normal password; Google revokes existing App Passwords after the Google Account
+password changes.
 
 Lesson completion is stored in `public.lesson_progress`. Apply the included migration after
 authenticating the CLI with an account that can manage the configured project:

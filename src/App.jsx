@@ -611,7 +611,14 @@ function MobileMenu({
   );
 }
 
-function getAuthErrorMessage(error, t) {
+function getAuthErrorMessage(error, t, operation = "") {
+  if (error?.code === "unexpected_failure" && operation === "signup") {
+    return t(
+      "The confirmation email service is unavailable. Please contact the app owner.",
+      "Confirmation email service အသုံးမပြုနိုင်ပါ App owner ကို ဆက်သွယ်ပါ",
+    );
+  }
+
   const messagesByCode = {
     email_address_invalid: t(
       "Enter a valid email address.",
@@ -748,6 +755,7 @@ function AuthModal({ open, onClose, initialMode = "login", required = false }) {
           password,
           options: {
             data: { full_name: fullName.trim() },
+            emailRedirectTo: window.location.origin,
           },
         });
         if (signUpError) throw signUpError;
@@ -786,7 +794,7 @@ function AuthModal({ open, onClose, initialMode = "login", required = false }) {
         setConfirmation("");
       }
     } catch (authError) {
-      setError(getAuthErrorMessage(authError, t));
+      setError(getAuthErrorMessage(authError, t, mode));
     } finally {
       setBusy(false);
     }
