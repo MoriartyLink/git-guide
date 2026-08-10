@@ -44,6 +44,7 @@ import {
   useState,
 } from "react";
 import gitTogetherLogo from "./assets/git-together-logo.png";
+import pockraftLogo from "./assets/pockraft-logo.png";
 import trailerVideo from "./assets/trailer.mp4";
 import GuidedGitSimulator from "./GuidedGitSimulator";
 import GuideChat from "./GuideChat";
@@ -63,13 +64,20 @@ function localize(item, field, language) {
   return item?.[field];
 }
 
-function FirstTimeTour({ onNavigate }) {
+function NewMemberGuide({ onNavigate, openRequest }) {
   const { t } = useLanguage();
-  const storageKey = "learn-git-first-visit-tour";
+  const storageKey = "learn-git-new-member-guide-v2";
   const [visible, setVisible] = useState(
     () => localStorage.getItem(storageKey) !== "complete",
   );
   const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    if (!openRequest) return;
+    setActiveStep(0);
+    setVisible(true);
+  }, [openRequest]);
+
   useEffect(() => {
     if (!visible) return undefined;
     const previousOverflow = document.body.style.overflow;
@@ -83,6 +91,21 @@ function FirstTimeTour({ onNavigate }) {
     {
       id: "home",
       icon: BookOpen,
+      eyebrow: t("HOME", "ပင်မ"),
+      title: t("Start with the big picture.", "အရင်ဆုံး လမ်းကြောင်းကို သိပါ"),
+      copy: t(
+        "See the accelerated path from Git beginner to community contributor.",
+        "Git အစပြုသူကနေ community contributor အထိ အမြန်ဆုံးလမ်းကြောင်းကို ကြည့်ပါ",
+      ),
+      features: [
+        t("Understand the learning goal", "လေ့လာမည့် ရည်ရွယ်ချက်ကို သိပါ"),
+        t("Open beginner FAQs", "အစပြုသူ FAQ ကို ဖွင့်ပါ"),
+        t("Find repositories to contribute to", "Contribute လုပ်မည့် repository ရှာပါ"),
+      ],
+    },
+    {
+      id: "learn",
+      icon: GraduationCap,
       eyebrow: t("LEARN TAB", "LEARN TAB"),
       title: t("Follow a clear learning path.", "ရှင်းလင်းတဲ့ learning path အတိုင်းသွားပါ"),
       copy: t(
@@ -93,21 +116,6 @@ function FirstTimeTour({ onNavigate }) {
         t("Beginner → Intermediate → Advanced", "Beginner → Intermediate → Advanced"),
         t("Short lessons with one practical command", "လက်တွေ့ command တစ်ခုပါတဲ့ lesson တိုများ"),
         t("Quick checks and saved completion", "Quick checks နဲ့ သိမ်းထားမယ့် completion"),
-      ],
-    },
-    {
-      id: "knowledge",
-      icon: CircleHelp,
-      eyebrow: t("KNOWLEDGE TAB", "KNOWLEDGE TAB"),
-      title: t("Find a simple answer quickly.", "ရိုးရှင်းတဲ့အဖြေကို မြန်မြန်ရှာပါ"),
-      copy: t(
-        "Search Git ideas, filter topics, and open practical examples whenever a command or workflow feels unclear.",
-        "Command သို့ workflow မရှင်းတဲ့အခါ Git အကြောင်းအရာရှာ၊ topic filter လုပ်ပြီး လက်တွေ့ examples ဖွင့်ပါ",
-      ),
-      features: [
-        t("Searchable beginner-friendly answers", "Search လုပ်နိုင်တဲ့ beginner-friendly answers"),
-        t("Merge, rebase, GitHub, SSH, and Windows guides", "Merge၊ rebase၊ GitHub၊ SSH နဲ့ Windows guides"),
-        t("Trusted documentation and video links", "ယုံကြည်ရတဲ့ documentation နဲ့ video links"),
       ],
     },
     {
@@ -140,6 +148,21 @@ function FirstTimeTour({ onNavigate }) {
         t("One-click practice in Terminal Lab", "Terminal Lab မှာ တစ်ချက်နှိပ်ပြီးလေ့ကျင့်ပါ"),
       ],
     },
+    {
+      id: "knowledge",
+      icon: CircleHelp,
+      eyebrow: t("FAQ", "မေးခွန်းများ"),
+      title: t("Find a simple answer quickly.", "ရိုးရှင်းတဲ့အဖြေကို မြန်မြန်ရှာပါ"),
+      copy: t(
+        "Search Git topics and open a practical example when something feels unclear.",
+        "မရှင်းတာရှိရင် Git topic ရှာပြီး လက်တွေ့ example ကို ဖွင့်ပါ",
+      ),
+      features: [
+        t("Search beginner-friendly answers", "အစပြုသူအဖြေများကို ရှာပါ"),
+        t("Filter by Git topic", "Git topic အလိုက် စစ်ပါ"),
+        t("Open trusted reference links", "ယုံကြည်ရသော reference links ဖွင့်ပါ"),
+      ],
+    },
   ];
   const step = steps[activeStep];
 
@@ -165,8 +188,8 @@ function FirstTimeTour({ onNavigate }) {
 
         <div className="tour-layout">
           <aside className="tour-steps" aria-label={t("Tour steps", "Tour အဆင့်များ")}>
-            <small>{t("WELCOME TO LEARNGIT", "LEARNGIT မှ ကြိုဆိုပါတယ်")}</small>
-            <h2>{t("Four places. One Git journey.", "နေရာလေးခု Git ခရီးစဉ်တစ်ခု")}</h2>
+            <small>{t("NEW MEMBER GUIDE", "MEMBER အသစ် လမ်းညွှန်")}</small>
+            <h2>{t("Five places. One fast Git path.", "နေရာငါးခု Git လမ်းကြောင်းတစ်ခု")}</h2>
             {steps.map((item, index) => (
               <button
                 type="button"
@@ -237,7 +260,7 @@ function FirstTimeTour({ onNavigate }) {
                 <ArrowRight size={16} />
               </button>
             ) : (
-              <button type="button" className="primary-button" onClick={() => finish("home")}>
+              <button type="button" className="primary-button" onClick={() => finish("learn")}>
                 {t("Start learning", "စလေ့လာမယ်")}
                 <ArrowRight size={16} />
               </button>
@@ -484,6 +507,7 @@ function TopBar({
   authReady,
   onOpenAuth,
   onOpenProfile,
+  onOpenGuide,
   onSignOut,
 }) {
   const { language, setLanguage, t } = useLanguage();
@@ -496,13 +520,13 @@ function TopBar({
             className={currentView === "home" ? "active" : ""}
             onClick={() => onNavigate("home")}
           >
-            {t("Learn", "လေ့လာရန်")}
+            {t("Home", "ပင်မ")}
           </button>
           <button
-            className={currentView === "knowledge" ? "active" : ""}
-            onClick={() => onNavigate("knowledge")}
+            className={currentView === "learn" || currentView === "lesson" ? "active" : ""}
+            onClick={() => onNavigate("learn")}
           >
-            {t("Knowledge", "အခြေခံ သိရန်")}
+            {t("Learn", "လေ့လာရန်")}
           </button>
           <button
             className={currentView === "terminal" ? "active" : ""}
@@ -516,8 +540,18 @@ function TopBar({
           >
             {t("Cheat Sheet", "Command အကျဉ်း")}
           </button>
+          <button
+            className={currentView === "knowledge" ? "active" : ""}
+            onClick={() => onNavigate("knowledge")}
+          >
+            {t("FAQ", "မေးခွန်းများ")}
+          </button>
         </nav>
         <div className="topbar-actions">
+          <button className="nav-guide-button" onClick={onOpenGuide}>
+            <BookOpen size={17} />
+            Guide
+          </button>
           <AccountControl
             session={session}
             authReady={authReady}
@@ -551,6 +585,7 @@ function MobileMenu({
   authReady,
   onOpenAuth,
   onOpenProfile,
+  onOpenGuide,
   onSignOut,
 }) {
   const { language, setLanguage, t } = useLanguage();
@@ -567,10 +602,11 @@ function MobileMenu({
         </div>
         <nav>
           {[
-            ["home", BookOpen, t("Learn", "လေ့လာရန်")],
-            ["knowledge", CircleHelp, t("Knowledge", "အခြေခံ သိရန်")],
+            ["home", BookOpen, t("Home", "ပင်မ")],
+            ["learn", GraduationCap, t("Learn", "လေ့လာရန်")],
             ["terminal", TerminalSquare, t("Terminal Lab", "Terminal လေ့ကျင့်ခန်း")],
             ["cheatsheet", Command, t("Cheat Sheet", "Command အကျဉ်း")],
+            ["knowledge", CircleHelp, t("FAQ", "မေးခွန်းများ")],
           ].map(([view, Icon, label]) => (
             <button
               key={view}
@@ -585,6 +621,16 @@ function MobileMenu({
             </button>
           ))}
         </nav>
+        <button
+          className="drawer-guide-button"
+          onClick={() => {
+            onClose();
+            onOpenGuide();
+          }}
+        >
+          <BookOpen size={18} />
+          Open new member guide
+        </button>
         <button
           className="drawer-language"
           onClick={() => setLanguage(language === "en" ? "my" : "en")}
@@ -612,7 +658,52 @@ function MobileMenu({
   );
 }
 
+function getAuthErrorDetails(error) {
+  const possibleMessages = [
+    error?.message,
+    error?.error_description,
+    error?.msg,
+    typeof error === "string" ? error : "",
+  ];
+  const message = possibleMessages.find((value) => {
+    if (typeof value !== "string") return false;
+    const normalized = value.trim();
+    return (
+      normalized &&
+      normalized !== "{}" &&
+      normalized !== "[]" &&
+      normalized !== "null" &&
+      normalized !== "[object Object]"
+    );
+  });
+  const retryMatch = message?.match(
+    /(?:request this|try again|request another(?: email)?)\s+(?:in|after)\s+(\d+)\s*seconds?/i,
+  );
+
+  return {
+    message,
+    retryAfterSeconds: retryMatch ? Number.parseInt(retryMatch[1], 10) : 0,
+  };
+}
+
 function getAuthErrorMessage(error, t, operation = "") {
+  const { message, retryAfterSeconds } = getAuthErrorDetails(error);
+
+  if (retryAfterSeconds > 0) {
+    if (operation === "signup") {
+      return t(
+        `A confirmation email was just requested. Please wait ${retryAfterSeconds} seconds before trying again.`,
+        `Confirmation email တောင်းထားပြီးပါပြီ ${retryAfterSeconds} စက္ကန့်စောင့်ပြီး ထပ်စမ်းပါ`,
+      );
+    }
+    if (operation === "forgot") {
+      return t(
+        `A password reset email was just requested. Please wait ${retryAfterSeconds} seconds before trying again.`,
+        `Password reset email တောင်းထားပြီးပါပြီ ${retryAfterSeconds} စက္ကန့်စောင့်ပြီး ထပ်စမ်းပါ`,
+      );
+    }
+  }
+
   const messagesByCode = {
     email_address_invalid: t(
       "Enter a valid email address.",
@@ -652,24 +743,6 @@ function getAuthErrorMessage(error, t, operation = "") {
     return messagesByCode[error.code];
   }
 
-  const possibleMessages = [
-    error?.message,
-    error?.error_description,
-    error?.msg,
-    typeof error === "string" ? error : "",
-  ];
-  const message = possibleMessages.find((value) => {
-    if (typeof value !== "string") return false;
-    const normalized = value.trim();
-    return (
-      normalized &&
-      normalized !== "{}" &&
-      normalized !== "[]" &&
-      normalized !== "null" &&
-      normalized !== "[object Object]"
-    );
-  });
-
   const isSignupServiceFailure =
     operation === "signup" &&
     (error?.code === "unexpected_failure" ||
@@ -690,6 +763,17 @@ function getAuthErrorMessage(error, t, operation = "") {
   );
 }
 
+function GoogleIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path fill="#4285f4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.07H12v3.92h5.38a4.6 4.6 0 0 1-2 3.02v2.54h3.24c1.9-1.75 2.98-4.32 2.98-7.41Z" />
+      <path fill="#34a853" d="M12 22c2.7 0 4.98-.9 6.63-2.36l-3.24-2.54c-.9.6-2.05.96-3.39.96-2.61 0-4.82-1.77-5.61-4.14H3.04v2.62A10 10 0 0 0 12 22Z" />
+      <path fill="#fbbc05" d="M6.39 13.92A6 6 0 0 1 6.07 12c0-.67.12-1.32.32-1.92V7.46H3.04A10 10 0 0 0 2 12c0 1.63.39 3.17 1.04 4.54l3.35-2.62Z" />
+      <path fill="#ea4335" d="M12 5.94c1.47 0 2.79.5 3.82 1.5l2.88-2.88A9.65 9.65 0 0 0 12 2a10 10 0 0 0-8.96 5.46l3.35 2.62C7.18 7.71 9.39 5.94 12 5.94Z" />
+    </svg>
+  );
+}
+
 function AuthModal({ open, onClose, initialMode = "login", required = false }) {
   const { t } = useLanguage();
   const [mode, setMode] = useState(initialMode);
@@ -698,9 +782,12 @@ function AuthModal({ open, onClose, initialMode = "login", required = false }) {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const [busy, setBusy] = useState(false);
+  const [retryAfterSeconds, setRetryAfterSeconds] = useState(0);
+  const [retryOperation, setRetryOperation] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const emailRef = useRef(null);
+  const submitInFlightRef = useRef(false);
 
   const resetFeedback = () => {
     setError("");
@@ -727,10 +814,53 @@ function AuthModal({ open, onClose, initialMode = "login", required = false }) {
     return () => document.removeEventListener("keydown", closeOnEscape);
   }, [initialMode, open, onClose, required]);
 
+  useEffect(() => {
+    if (retryAfterSeconds <= 0) return undefined;
+    const timer = window.setTimeout(() => {
+      setRetryAfterSeconds((seconds) => Math.max(0, seconds - 1));
+    }, 1000);
+    return () => window.clearTimeout(timer);
+  }, [retryAfterSeconds]);
+
   if (!open) return null;
+
+  const cooldownActive = retryOperation === mode && retryAfterSeconds > 0;
+
+  const signInWithGoogle = async () => {
+    if (submitInFlightRef.current) return;
+    resetFeedback();
+
+    if (!isSupabaseConfigured) {
+      setError(
+        t(
+          "Supabase is not configured yet. Add VITE_SUPABASE_PUBLISHABLE_KEY to your environment.",
+          "Supabase မချိတ်ရသေးပါ VITE_SUPABASE_PUBLISHABLE_KEY ကို environment ထဲထည့်ပါ",
+        ),
+      );
+      return;
+    }
+
+    submitInFlightRef.current = true;
+    setBusy(true);
+    try {
+      const redirectUrl = new URL(window.location.href);
+      redirectUrl.searchParams.delete("password-reset");
+      redirectUrl.searchParams.delete("profile");
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: redirectUrl.toString() },
+      });
+      if (oauthError) throw oauthError;
+    } catch (authError) {
+      submitInFlightRef.current = false;
+      setBusy(false);
+      setError(getAuthErrorMessage(authError, t, "google"));
+    }
+  };
 
   const submit = async (event) => {
     event.preventDefault();
+    if (submitInFlightRef.current || cooldownActive) return;
     resetFeedback();
 
     if (!isSupabaseConfigured) {
@@ -751,6 +881,7 @@ function AuthModal({ open, onClose, initialMode = "login", required = false }) {
       return;
     }
 
+    submitInFlightRef.current = true;
     setBusy(true);
     try {
       if (mode === "login") {
@@ -802,8 +933,14 @@ function AuthModal({ open, onClose, initialMode = "login", required = false }) {
         setConfirmation("");
       }
     } catch (authError) {
+      const { retryAfterSeconds: authRetryAfterSeconds } = getAuthErrorDetails(authError);
+      if (authRetryAfterSeconds > 0) {
+        setRetryOperation(mode);
+        setRetryAfterSeconds(authRetryAfterSeconds);
+      }
       setError(getAuthErrorMessage(authError, t, mode));
     } finally {
+      submitInFlightRef.current = false;
       setBusy(false);
     }
   };
@@ -874,6 +1011,22 @@ function AuthModal({ open, onClose, initialMode = "login", required = false }) {
         )}
 
         <form className="auth-form" onSubmit={submit}>
+          {(mode === "login" || mode === "signup") && (
+            <>
+              <button
+                type="button"
+                className="auth-google-button"
+                onClick={signInWithGoogle}
+                disabled={busy}
+              >
+                {busy ? <LoaderCircle className="spinning" size={17} /> : <GoogleIcon />}
+                {t("Continue with Google", "Google ဖြင့် ဆက်သွားမယ်")}
+              </button>
+              <div className="auth-divider" role="separator">
+                <span>{t("or use email", "သို့မဟုတ် Email သုံးမယ်")}</span>
+              </div>
+            </>
+          )}
           {mode === "signup" && (
             <label>
               <span>{t("Name", "နာမည်")}</span>
@@ -917,12 +1070,21 @@ function AuthModal({ open, onClose, initialMode = "login", required = false }) {
           )}
           {error && <div className="auth-message error" role="alert">{error}</div>}
           {notice && <div className="auth-message success" role="status">{notice}</div>}
-          <button className="primary-button auth-submit" disabled={busy}>
+          <button className="primary-button auth-submit" disabled={busy || cooldownActive}>
             {busy && <LoaderCircle className="spinning" size={16} />}
-            {mode === "login" && t("Sign in", "ဝင်မယ်")}
-            {mode === "signup" && t("Create account", "အကောင့်ဖန်တီးမယ်")}
-            {mode === "forgot" && t("Send reset email", "Reset email ပို့မယ်")}
-            {mode === "recovery" && t("Update password", "Password ပြောင်းမယ်")}
+            {cooldownActive ? (
+              t(
+                `Try again in ${retryAfterSeconds}s`,
+                `${retryAfterSeconds} စက္ကန့်နေရင် ထပ်စမ်းပါ`,
+              )
+            ) : (
+              <>
+                {mode === "login" && t("Sign in", "ဝင်မယ်")}
+                {mode === "signup" && t("Create account", "အကောင့်ဖန်တီးမယ်")}
+                {mode === "forgot" && t("Send reset email", "Reset email ပို့မယ်")}
+                {mode === "recovery" && t("Update password", "Password ပြောင်းမယ်")}
+              </>
+            )}
           </button>
           {mode === "forgot" && (
             <button type="button" className="auth-back-link" onClick={() => changeMode("login")}>
@@ -1216,19 +1378,18 @@ function Hero({ onStart }) {
       <div className="container hero-content">
         <div className="hero-copy">
           <h1>
-            {t("Learn Git.", "Git ကိုလေ့လာ")}
-            <br />
-            <span>{t("Build together.", "အတူတူတည်ဆောက်")}</span>
+            {t("Beginner to ", "အစပြုသူမှ ")}
+            <span>{t("contributor.", "contributor သို့")}</span>
           </h1>
           <p>
             {t(
-              "Simple Git and GitHub lessons. Read a short step, try a command, and learn with your community.",
-              " Git နဲ့ GitHub ကို community နဲ့အတူ တစ်လှမ်းချင်း လေ့လာမယ်",
+              "An accelerated Git guide for joining community projects and shipping your first pull request.",
+              "Community project များတွင်ပါဝင်ပြီး ပထမ pull request တင်နိုင်ရန် အမြန် Git လမ်းညွှန်",
             )}
           </p>
           <div className="hero-actions">
             <button className="primary-button hero-button" onClick={onStart}>
-              {t("Start learning", "စလေ့လာမယ်")}
+              {t("Start the fast path", "အမြန်လမ်းကြောင်း စမယ်")}
             </button>
           </div>
         </div>
@@ -1267,16 +1428,15 @@ function PublicLanding({ onSignIn, onSignUp }) {
 
       <section className="landing-hero">
         <div className="landing-copy">
-          <span className="kicker">{t("A VISUAL GIT GUIDE", "မြင်ကွင်းဖြင့် လေ့လာမည့် GIT GUIDE")}</span>
+          <span className="kicker">{t("ACCELERATED GIT GUIDE", "အမြန် GIT လမ်းညွှန်")}</span>
           <h1>
-            {t("Learn Git.", "Git ကိုလေ့လာ")}
-            <br />
-            <span>{t("Build together.", "အတူတူတည်ဆောက်")}</span>
+            {t("Beginner to ", "အစပြုသူမှ ")}
+            <span>{t("contributor.", "contributor သို့")}</span>
           </h1>
           <p>
             {t(
-              "Short bilingual lessons, safe terminal practice, and a live commit map—built to make Git clear from your first command.",
-              "ဘာသာစကားနှစ်မျိုးဖြင့် သင်ခန်းစာတိုများ၊ လုံခြုံသော terminal လေ့ကျင့်မှုနှင့် live commit map တို့ဖြင့် ပထမ command မှစ၍ Git ကိုရှင်းလင်းစွာ လေ့လာပါ",
+              "Learn the essential commands, practice the contribution workflow, and open your first community pull request.",
+              "မရှိမဖြစ် commands ကိုလေ့လာ၊ contribution workflow ကိုလေ့ကျင့်ပြီး ပထမ community pull request ဖွင့်ပါ",
             )}
           </p>
           <div className="landing-actions">
@@ -1290,9 +1450,9 @@ function PublicLanding({ onSignIn, onSignUp }) {
             </button>
           </div>
           <div className="landing-highlights" aria-label={t("Guide highlights", "Guide အားသာချက်များ")}>
-            <span>{t("Short lessons", "သင်ခန်းစာတိုများ")}</span>
-            <span>{t("Guided terminal", "Guided terminal")}</span>
-            <span>{t("English + Burmese", "English + မြန်မာ")}</span>
+            <span>{t("Accelerated path", "အမြန်လမ်းကြောင်း")}</span>
+            <span>{t("Safe practice", "လုံခြုံသောလေ့ကျင့်မှု")}</span>
+            <span>{t("First pull request", "ပထမ pull request")}</span>
           </div>
         </div>
 
@@ -1707,15 +1867,15 @@ function BeginnerQuestions({ onKnowledge }) {
       <div className="container beginner-inner">
         <div>
           <span className="kicker">{t("NEW TO GIT?", "GIT ကို အခုမှ စလား")}</span>
-          <h2>{t("Start with your questions.", "သိချင်တဲ့ မေးခွန်းကနေ စပါ")}</h2>
+          <h2>{t("Questions first. Learn faster.", "မေးခွန်းကစပြီး မြန်မြန်လေ့လာပါ")}</h2>
           <p>
             {t(
-              "Simple answers to the questions every beginner asks.",
-              "အစပြုသူတိုင်း မေးလေ့ရှိတာကို ရိုးရိုးရှင်းရှင်း ဖြေပေးထားတယ်",
+              "Short answers. Practical examples.",
+              "အဖြေတိုများ လက်တွေ့ဥပမာများ",
             )}
           </p>
           <button className="primary-button" onClick={onKnowledge}>
-            {t("Open beginner knowledge", "အခြေခံဗဟုသုတ ဖွင့်မယ်")}
+            {t("Open FAQ", "FAQ ဖွင့်မယ်")}
           </button>
         </div>
         <div className="question-preview">
@@ -1735,21 +1895,12 @@ function ReferenceRepositories() {
   const { t } = useLanguage();
   const repositories = [
     {
-      name: "torvalds/linux",
-      owner: "Linus Torvalds & Linux maintainers",
-      url: "https://github.com/torvalds/linux",
+      name: "MoriartyLink/talkware-community-application",
+      owner: t("Talkware community application", "Talkware community application"),
+      url: "https://github.com/MoriartyLink/talkware-community-application",
       copy: t(
-        "Study a large maintainer-led project, its history, reviews, and contribution rules",
-        "Maintainer ဦးဆောင်တဲ့ project ကြီးရဲ့ history review နဲ့ contribution rules ကိုကြည့်ပါ",
-      ),
-    },
-    {
-      name: "git/git",
-      owner: "Git project",
-      url: "https://github.com/git/git",
-      copy: t(
-        "See how the Git project documents patches, reviews, and contribution standards",
-        "Git project က patch review နဲ့ contribution standards ကို ဘယ်လိုရေးထားလဲ ကြည့်ပါ",
+        "Pick an open issue and contribute to the community application.",
+        "Open issue တစ်ခုရွေးပြီး community application ကို contribute လုပ်ပါ",
       ),
     },
     {
@@ -1757,8 +1908,8 @@ function ReferenceRepositories() {
       owner: "First Contributions",
       url: "https://github.com/firstcontributions/first-contributions",
       copy: t(
-        "Practice the beginner fork, branch, commit, and pull-request workflow",
-        "အစပြုသူ fork branch commit နဲ့ pull request workflow ကိုလေ့ကျင့်ပါ",
+        "Practice fork, branch, commit, and pull request.",
+        "Fork၊ branch၊ commit နဲ့ pull request ကိုလေ့ကျင့်ပါ",
       ),
     },
     {
@@ -1766,8 +1917,8 @@ function ReferenceRepositories() {
       owner: "GitHub",
       url: "https://github.com/github/docs",
       copy: t(
-        "Read a clear public contribution guide from a documentation project",
-        "Documentation project ရဲ့ ရှင်းတဲ့ public contribution guide ကိုဖတ်ပါ",
+        "Make a focused documentation contribution.",
+        "Documentation contribution တစ်ခုလုပ်ပါ",
       ),
     },
     {
@@ -1775,8 +1926,8 @@ function ReferenceRepositories() {
       owner: t("Talkware Myanmar reference", "Talkware Myanmar reference"),
       url: "https://github.com/aungkokothet/talkwaremm-member-app-factory",
       copy: t(
-        "Inspect a public Talkware Myanmar member-app project, its main branch, commit history, and project structure",
-        "Public Talkware Myanmar member-app project ရဲ့ main branch၊ commit history နဲ့ project structure ကိုလေ့လာပါ",
+        "Explore another Talkware member-app workflow.",
+        "နောက်ထပ် Talkware member-app workflow ကိုလေ့လာပါ",
       ),
     },
     {
@@ -1784,8 +1935,8 @@ function ReferenceRepositories() {
       owner: t("Popular open-source learning repository", "နာမည်ကြီး open-source learning repository"),
       url: "https://github.com/freeCodeCamp/freeCodeCamp",
       copy: t(
-        "Explore a widely starred education codebase with a documented, beginner-friendly contribution workflow",
-        "လူကြိုက်များတဲ့ education codebase နဲ့ အစပြုသူအတွက် ရှင်းပြထားတဲ့ contribution workflow ကိုလေ့လာပါ",
+        "Use a documented workflow to contribute to a large project.",
+        "ရေးထားသော workflow အတိုင်း project ကြီးတစ်ခုကို contribute လုပ်ပါ",
       ),
     },
   ];
@@ -1795,13 +1946,13 @@ function ReferenceRepositories() {
       <div className="container">
         <div className="section-heading">
           <div>
-            <span className="kicker">{t("WORKFLOW REFERENCES", "WORKFLOW ကို လေ့လာရန်")}</span>
-            <h2>{t("Learn from real repositories", "Repository အစစ်တွေကနေ လေ့လာပါ")}</h2>
+            <span className="kicker">{t("CONTRIBUTE FOR REAL", "တကယ် CONTRIBUTE လုပ်မယ်")}</span>
+            <h2>{t("Contribute to real open-source repos.", "Open-source repo အစစ်များကို contribute လုပ်ပါ")}</h2>
           </div>
           <p>
             {t(
-              "Open the repository, read CONTRIBUTING, inspect branches and commits, then compare its workflow with this guide",
-              "Repository ကိုဖွင့်၊ CONTRIBUTING ဖတ်၊ branches နဲ့ commits ကြည့်ပြီး ဒီ guide နဲ့ workflow နှိုင်းယှဉ်ပါ",
+              "Pick an issue. Read CONTRIBUTING. Fork, branch, commit, and open a pull request.",
+              "Issue ရွေး၊ CONTRIBUTING ဖတ်၊ fork၊ branch၊ commit လုပ်ပြီး pull request ဖွင့်ပါ",
             )}
           </p>
         </div>
@@ -1811,7 +1962,7 @@ function ReferenceRepositories() {
               <small>{repository.owner}</small>
               <strong>{repository.name}</strong>
               <p>{repository.copy}</p>
-              <span>{t("Open repository", "Repository ဖွင့်မယ်")}</span>
+              <span>{t("Find a contribution", "Contribution ရှာမယ်")}</span>
             </a>
           ))}
         </div>
@@ -1820,22 +1971,86 @@ function ReferenceRepositories() {
   );
 }
 
-function Home({ guide, completed, onOpenLesson, onKnowledge }) {
-  const pathRef = useRef(null);
+function Home({ onLearn, onKnowledge }) {
   return (
     <>
-      <Hero
-        onStart={() => pathRef.current?.scrollIntoView({ behavior: "smooth" })}
-      />
+      <Hero onStart={onLearn} />
       <BeginnerQuestions onKnowledge={onKnowledge} />
+      <ReferenceRepositories />
+    </>
+  );
+}
+
+function LearningBlueprint() {
+  const { t } = useLanguage();
+  const references = [
+    {
+      title: "Pro Git",
+      authors: "Scott Chacon & Ben Straub",
+      sequence: t(
+        "Basics → branching → distributed workflows → tools",
+        "Basics → branching → distributed workflows → tools",
+      ),
+      url: "https://git-scm.com/book/en/v2",
+    },
+    {
+      title: "Version Control with Git, 3rd Edition",
+      authors: "Prem Kumar Ponuthorai & Jon Loeliger",
+      sequence: t(
+        "Core model → collaboration → advanced practice",
+        "Core model → collaboration → advanced practice",
+      ),
+      url: "https://www.oreilly.com/library/view/version-control-with/9781492091189/",
+    },
+  ];
+
+  return (
+    <section className="learning-blueprint">
+      <div className="container">
+        <div className="blueprint-copy">
+          <span className="kicker">{t("EXPERT-BOOK BLUEPRINT", "EXPERT BOOK လမ်းကြောင်း")}</span>
+          <h1>{t("An industry-proven sequence. Original lessons.", "Industry သုံးလမ်းကြောင်း မူရင်း lessons")}</h1>
+          <p>
+            {t(
+              "The shortest useful sequence: foundations, daily work, branches, collaboration, recovery, then contribution.",
+              "အတိုဆုံးအသုံးဝင်သော အစဉ်: foundations၊ daily work၊ branches၊ collaboration၊ recovery ပြီး contribution",
+            )}
+          </p>
+        </div>
+        <div className="blueprint-references">
+          {references.map((reference) => (
+            <a key={reference.title} href={reference.url} target="_blank" rel="noreferrer">
+              <BookOpen size={22} />
+              <span>
+                <strong>{reference.title}</strong>
+                <small>{reference.authors}</small>
+                <em>{reference.sequence}</em>
+              </span>
+              <ExternalLink size={17} />
+            </a>
+          ))}
+        </div>
+        <small className="blueprint-disclaimer">
+          {t(
+            "Structural references only. No book content is copied. The authors and publishers do not sponsor or endorse learnGit.",
+            "Structure ကိုသာ reference ယူထားသည် Book content မကူးပါ Authors နဲ့ publishers များက learnGit ကို sponsor သို့ endorse မလုပ်ထားပါ",
+          )}
+        </small>
+      </div>
+    </section>
+  );
+}
+
+function LearnPage({ guide, completed, onOpenLesson }) {
+  return (
+    <main className="learn-page">
+      <LearningBlueprint />
       <PathSection
         guide={guide}
         completed={completed}
         onOpenLesson={onOpenLesson}
-        pathRef={pathRef}
       />
-      <ReferenceRepositories />
-    </>
+    </main>
   );
 }
 
@@ -2547,7 +2762,7 @@ function LessonView({
             <Menu size={17} /> {t("Lessons", "သင်ခန်းစာ")}
           </button>
           <button onClick={onBack}>
-            <ArrowLeft size={17} /> {t("Home", "ပင်မ")}
+            <ArrowLeft size={17} /> {t("Learn", "လေ့လာရန်")}
           </button>
         </div>
         <div className={`lesson-content-shell ${visualOpen ? "" : "visual-closed"}`}>
@@ -3178,7 +3393,7 @@ function Footer() {
       <div className="container footer-inner">
         <div>
           <Logo />
-          <p>{t("Simple Git lessons for community members.", "Community members များအတွက် ရိုးရှင်းတဲ့ Git သင်ခန်းစာ")}</p>
+          <p>{t("The shortest path from Git beginner to community contributor.", "Git အစပြုသူမှ community contributor သို့ အတိုဆုံးလမ်း")}</p>
         </div>
         <div className="footer-links">
           <a href="https://www.talkware.click/" target="_blank" rel="noreferrer">
@@ -3194,10 +3409,15 @@ function Footer() {
       </div>
       <div className="container footer-bottom">
         <span>{t("Made for community learners.", "Community learners များအတွက်")}</span>
-        <a href="mailto:moriartylink@gmail.com">
-          {t("Contact the developer", "Developer ကိုဆက်သွယ်ရန်")} — MoriartyLink:
-          moriartylink@gmail.com
-        </a>
+        <div className="footer-credits">
+          <div className="pockraft-credit" aria-label="Developed by Pockraft">
+            <span>{t("Developed by", "ဖန်တီးသူ")}</span>
+            <span className="pockraft-logo" aria-hidden="true">
+              <img src={pockraftLogo} alt="" />
+            </span>
+            <strong>Pockraft</strong>
+          </div>
+        </div>
       </div>
     </footer>
   );
@@ -3216,7 +3436,7 @@ export default function App() {
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get("lesson")) return "lesson";
     const queryView = searchParams.get("view");
-    return ["home", "knowledge", "terminal", "cheatsheet"].includes(queryView)
+    return ["home", "learn", "knowledge", "terminal", "cheatsheet"].includes(queryView)
       ? queryView
       : "home";
   });
@@ -3244,6 +3464,7 @@ export default function App() {
   } = useLessonProgress(session, authReady);
   const [completedChallenges, setCompletedChallenges] = useState([]);
   const [initialCommand, setInitialCommand] = useState("");
+  const [guideOpenRequest, setGuideOpenRequest] = useState(0);
 
   useEffect(() => {
     if (!session) return undefined;
@@ -3328,14 +3549,9 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [view, lessonId]);
 
-  const navigate = useCallback((nextView, scrollToPath = false) => {
+  const navigate = useCallback((nextView) => {
     setView(nextView);
     setLessonId(null);
-    if (nextView === "home" && scrollToPath) {
-      window.setTimeout(() => {
-        document.querySelector(".path-section")?.scrollIntoView({ behavior: "smooth" });
-      }, 20);
-    }
   }, []);
 
   const openAuth = useCallback((mode = "login") => {
@@ -3412,7 +3628,7 @@ export default function App() {
         </>
       ) : (
         <div className="app-shell">
-          <FirstTimeTour onNavigate={navigate} />
+          <NewMemberGuide onNavigate={navigate} openRequest={guideOpenRequest} />
           <TopBar
             currentView={view}
             onNavigate={navigate}
@@ -3421,6 +3637,7 @@ export default function App() {
             authReady={authReady}
             onOpenAuth={openAuth}
             onOpenProfile={() => setProfileOpen(true)}
+            onOpenGuide={() => setGuideOpenRequest((request) => request + 1)}
             onSignOut={signOut}
           />
           <MobileMenu
@@ -3431,6 +3648,7 @@ export default function App() {
             authReady={authReady}
             onOpenAuth={openAuth}
             onOpenProfile={() => setProfileOpen(true)}
+            onOpenGuide={() => setGuideOpenRequest((request) => request + 1)}
             onSignOut={signOut}
           />
           <AuthModal open={authOpen} onClose={closeAuth} initialMode={authMode} />
@@ -3445,10 +3663,15 @@ export default function App() {
           />
           {view === "home" && (
             <Home
+              onLearn={() => navigate("learn")}
+              onKnowledge={() => navigate("knowledge")}
+            />
+          )}
+          {view === "learn" && (
+            <LearnPage
               guide={guide}
               completed={completed}
               onOpenLesson={openLesson}
-              onKnowledge={() => navigate("knowledge")}
             />
           )}
           {view === "lesson" && (
@@ -3457,7 +3680,7 @@ export default function App() {
               lessonId={lessonId}
               completed={completed}
               onSelect={openLesson}
-              onBack={() => navigate("home")}
+              onBack={() => navigate("learn")}
               onTerminal={openTerminal}
               onToggleComplete={toggleLesson}
             />

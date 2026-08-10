@@ -1,18 +1,18 @@
 # learnGit
 
-learnGit is a public, bilingual Git and GitHub learning guide for community contributors. It
-combines short lessons, a stateful guided terminal, practical cheat sheets, randomized
-knowledge checks, a guide-grounded AI helper, and a downloadable completion certificate.
+learnGit is an accelerated, bilingual Git guide: the shortest practical path from beginner to
+community contributor. Learners study essential commands, practice the workflow, and prepare to
+open a real pull request.
 
-Learners sign up or sign in with email and password before accessing the guide. Signed-in learning
-progress is synchronized to Supabase and cached in the learner's browser.
+Learners sign up or sign in with Google or with email and password before accessing the guide.
+Signed-in learning progress is synchronized to Supabase and cached in the learner's browser.
 
 ## Features
 
 - English and Burmese interfaces
-- Required Supabase email/password accounts with persistent sessions
-- 7 learning modules with 34 beginner-focused lessons
-- 49 searchable Git and GitHub knowledge topics
+- Required Supabase accounts with Google OAuth or email/password sign-in and persistent sessions
+- 8 learning modules from foundations to real contribution
+- 63 searchable Git and GitHub FAQ topics
 - Stateful client-side guided terminal with a synchronized commit map
 - Guided scenarios for commits, branches, merges, rebases, conflicts, history, releases, remotes,
   pull requests, and free play
@@ -95,6 +95,17 @@ For signup-confirmation and forgot-password links, set the deployed app as **Sup
 Authentication → URL Configuration → Site URL**, then add both the local and deployed app URLs to
 **Redirect URLs**. The app sends new-account confirmations back to the current origin and requests a
 password-reset return URL such as `https://your-domain.example/?password-reset=1`.
+
+To enable Google sign-in:
+
+1. In Google Cloud, configure the OAuth consent screen and create a **Web application** OAuth client.
+2. Add `https://hiedkdrurpjriccflyph.supabase.co/auth/v1/callback` as an authorized redirect URI in
+   that Google OAuth client. Replace the project URL if `VITE_SUPABASE_URL` points elsewhere.
+3. In **Supabase → Authentication → Sign In / Providers → Google**, enable Google and enter the
+   Google client ID and client secret.
+4. In **Supabase → Authentication → URL Configuration**, keep `http://localhost:5173` and every
+   deployed app origin in the redirect allow list. OAuth returns learners to the page where they
+   started signing in.
 
 Production signup also requires working credentials under **Supabase → Authentication → Emails →
 SMTP Settings**. Check the Supabase Auth logs if account creation reports that the confirmation
