@@ -1981,70 +1981,9 @@ function Home({ onLearn, onKnowledge }) {
   );
 }
 
-function LearningBlueprint() {
-  const { t } = useLanguage();
-  const references = [
-    {
-      title: "Pro Git",
-      authors: "Scott Chacon & Ben Straub",
-      sequence: t(
-        "Basics → branching → distributed workflows → tools",
-        "Basics → branching → distributed workflows → tools",
-      ),
-      url: "https://git-scm.com/book/en/v2",
-    },
-    {
-      title: "Version Control with Git, 3rd Edition",
-      authors: "Prem Kumar Ponuthorai & Jon Loeliger",
-      sequence: t(
-        "Core model → collaboration → advanced practice",
-        "Core model → collaboration → advanced practice",
-      ),
-      url: "https://www.oreilly.com/library/view/version-control-with/9781492091189/",
-    },
-  ];
-
-  return (
-    <section className="learning-blueprint">
-      <div className="container">
-        <div className="blueprint-copy">
-          <span className="kicker">{t("EXPERT-BOOK BLUEPRINT", "EXPERT BOOK လမ်းကြောင်း")}</span>
-          <h1>{t("An industry-proven sequence. Original lessons.", "Industry သုံးလမ်းကြောင်း မူရင်း lessons")}</h1>
-          <p>
-            {t(
-              "The shortest useful sequence: foundations, daily work, branches, collaboration, recovery, then contribution.",
-              "အတိုဆုံးအသုံးဝင်သော အစဉ်: foundations၊ daily work၊ branches၊ collaboration၊ recovery ပြီး contribution",
-            )}
-          </p>
-        </div>
-        <div className="blueprint-references">
-          {references.map((reference) => (
-            <a key={reference.title} href={reference.url} target="_blank" rel="noreferrer">
-              <BookOpen size={22} />
-              <span>
-                <strong>{reference.title}</strong>
-                <small>{reference.authors}</small>
-                <em>{reference.sequence}</em>
-              </span>
-              <ExternalLink size={17} />
-            </a>
-          ))}
-        </div>
-        <small className="blueprint-disclaimer">
-          {t(
-            "Structural references only. No book content is copied. The authors and publishers do not sponsor or endorse learnGit.",
-            "Structure ကိုသာ reference ယူထားသည် Book content မကူးပါ Authors နဲ့ publishers များက learnGit ကို sponsor သို့ endorse မလုပ်ထားပါ",
-          )}
-        </small>
-      </div>
-    </section>
-  );
-}
-
 function LearnPage({ guide, completed, onOpenLesson }) {
   return (
     <main className="learn-page">
-      <LearningBlueprint />
       <PathSection
         guide={guide}
         completed={completed}
